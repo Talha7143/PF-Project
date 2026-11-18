@@ -1,0 +1,17 @@
+# .gitignore for Visual Studio and SFML C++ Projects
+.vs/
+x64/
+Debug/
+Release/
+*.user
+*.ilk
+*.pdb
+*.obj
+*.tlog
+*.log
+*.recipe
+*.lastbuildstate
+catalog.dat
+savegame.bin
+scores.dat
+transaction.log
