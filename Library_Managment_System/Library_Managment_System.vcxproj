@@ -19,7 +19,26 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BinaryFileManager.cpp" />
+    <ClCompile Include="Catalog.cpp" />
+    <ClCompile Include="CatalogTerminalUI.cpp" />
+    <ClCompile Include="GameEngine.cpp" />
+    <ClCompile Include="LibraryMap.cpp" />
+    <ClCompile Include="LoanManager.cpp" />
+    <ClCompile Include="PatronManager.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="Project.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BinaryFileManager.hpp" />
+    <ClInclude Include="Catalog.hpp" />
+    <ClInclude Include="CatalogTerminalUI.hpp" />
+    <ClInclude Include="GameEngine.hpp" />
+    <ClInclude Include="LibraryMap.hpp" />
+    <ClInclude Include="LoanManager.hpp" />
+    <ClInclude Include="PatronManager.hpp" />
+    <ClInclude Include="Player.hpp" />
+    <ClInclude Include="Structs.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
