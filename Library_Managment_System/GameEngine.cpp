@@ -1,0 +1,584 @@
+#include "GameEngine.hpp"
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+
+GameEngine::GameEngine()
+    : window(sf::VideoMode({ 800, 600 }), "Bibliotheca Quest: The Ultimate Library Simulation & Management Game")
+{
+    window.setFramerateLimit(60);
+}
+
+GameEngine::~GameEngine() {
+    // Save on destruction
+    BinaryFileManager::saveCatalog(catalog.getBooks());
+}
+
+bool GameEngine::initialize() {
+    // Load system font
+    if (!font.openFromFile("C:/Windows/Fonts/arial.ttf")) {
+        if (!font.openFromFile("C:/Windows/Fonts/segoeui.ttf")) {
+            std::cerr << "[WARNING]: Failed to load system font. UI text might not render.\n";
+            fontLoaded = false;
+        } else {
+            fontLoaded = true;
+        }
+    } else {
+        fontLoaded = true;
+    }
+
+    // Try loading persistent catalog, or initialize default
+    std::vector<Book> loadedBooks;
+    if (BinaryFileManager::loadCatalog(loadedBooks) && !loadedBooks.empty()) {
+        catalog.setBooks(loadedBooks);
+    } else {
+        catalog.initializeDefaultCatalog();
+        BinaryFileManager::saveCatalog(catalog.getBooks());
+    }
+
+    // Initialize map & patrons
+    map.initialize();
+    patronMgr.initialize(catalog);
+    BinaryFileManager::loadHighScores(highScores);
+
+    std::cout << "[SYSTEM]: Bibliotheca Quest Engine initialized successfully.\n";
+    return true;
+}
+
+void GameEngine::showNotification(const std::string& msg, float duration) {
+    notificationMsg = msg;
+    notificationTimer = duration;
+}
+
+void GameEngine::run() {
+    sf::Clock clock;
+
+    while (window.isOpen()) {
+        float dt = clock.restart().asSeconds();
+        if (dt > 0.1f) dt = 0.1f; // Clamp delta time
+
+        if (notificationTimer > 0.0f) {
+            notificationTimer -= dt;
+        }
+
+        // Process Window Events
+        while (const std::optional event = window.pollEvent()) {
+            if (event->is<sf::Event::Closed>()) {
+                BinaryFileManager::saveCatalog(catalog.getBooks());
+                BinaryFileManager::saveGameState(player.getData(), patronMgr.getPatrons());
+                window.close();
+            }
+
+            // Route events by state
+            switch (currentState) {
+                case GameState::MainMenuState:
+                    handleMainMenuInput(*event);
+                    break;
+                case GameState::GameplayState:
+                case GameState::CatalogUIState:
+                    handleGameplayInput(*event);
+                    break;
+                case GameState::PauseState:
+                    handlePauseInput(*event);
+                    break;
+                case GameState::GameOverState:
+                    handleGameOverInput(*event);
+                    break;
+                case GameState::LeaderboardState:
+                    handleLeaderboardInput(*event);
+                    break;
+            }
+        }
+
+        // State Update Logic
+        if (currentState == GameState::GameplayState || currentState == GameState::CatalogUIState) {
+            player.update(dt, map);
+
+            int scoreDelta = 0, servedDelta = 0, lostDelta = 0;
+            patronMgr.update(dt, catalog, map, scoreDelta, servedDelta, lostDelta);
+
+            if (scoreDelta != 0) player.addScore(scoreDelta);
+            if (servedDelta != 0) player.incrementServed();
+            if (lostDelta != 0) {
+                player.incrementLost();
+                showNotification("PATRON LOST! Impatience penalty applied (-50 pts)");
+                if (player.getData().patronsLost >= 5) {
+                    currentState = GameState::GameOverState;
+                }
+            }
+        }
+
+        // Render Frame
+        window.clear(sf::Color(215, 200, 175));
+
+        switch (currentState) {
+            case GameState::MainMenuState:
+                renderMainMenu();
+                break;
+            case GameState::GameplayState:
+            case GameState::CatalogUIState:
+                renderGameplay();
+                break;
+            case GameState::PauseState:
+                renderGameplay(); // Draw game under pause overlay
+                renderPauseMenu();
+                break;
+            case GameState::GameOverState:
+                renderGameOver();
+                break;
+            case GameState::LeaderboardState:
+                renderLeaderboard();
+                break;
+        }
+
+        window.display();
+    }
+}
+
+void GameEngine::handleMainMenuInput(const sf::Event& event) {
+    if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>()) {
+        if (keyPressed->scancode == sf::Keyboard::Scan::W || keyPressed->scancode == sf::Keyboard::Scan::Up) {
+            selectedMenuIndex = (selectedMenuIndex - 1 + static_cast<int>(menuOptions.size())) % menuOptions.size();
+        }
+        else if (keyPressed->scancode == sf::Keyboard::Scan::S || keyPressed->scancode == sf::Keyboard::Scan::Down) {
+            selectedMenuIndex = (selectedMenuIndex + 1) % menuOptions.size();
+        }
+        else if (keyPressed->scancode == sf::Keyboard::Scan::Enter || keyPressed->scancode == sf::Keyboard::Scan::Space) {
+            if (selectedMenuIndex == 0) { // Start Game
+                currentState = GameState::GameplayState;
+            }
+            else if (selectedMenuIndex == 1) { // Load Game
+                Player pData = player.getData();
+                std::vector<Patron> pQueue;
+                if (BinaryFileManager::loadGameState(pData, pQueue)) {
+                    player.setData(pData);
+                    if (!pQueue.empty()) patronMgr.setPatrons(pQueue);
+                    showNotification("Game state successfully loaded from savegame.bin!");
+                    currentState = GameState::GameplayState;
+                } else {
+                    showNotification("No savegame.bin file found!");
+                }
+            }
+            else if (selectedMenuIndex == 2) { // Leaderboard
+                BinaryFileManager::loadHighScores(highScores);
+                currentState = GameState::LeaderboardState;
+            }
+            else if (selectedMenuIndex == 3) { // How to play / Terminal info
+                std::cout << "\n[HOW TO PLAY BIBLIOTHECA QUEST]:\n"
+                          << "1. Move Librarian Talha using W/A/S/D or Arrow keys.\n"
+                          << "2. Open Terminal overlay with TAB or by standing at the Computer Desk.\n"
+                          << "3. Search for books via ISBN (O(log N) Binary) or Title (O(N) Linear).\n"
+                          << "4. Retrieve books from shelves with [E]. Issue books to patrons with [E].\n"
+                          << "5. Save and Pause anytime with [ESC].\n\n";
+            }
+            else if (selectedMenuIndex == 4) { // Exit
+                window.close();
+            }
+        }
+    }
+}
+
+void GameEngine::handleGameplayInput(const sf::Event& event) {
+    // If Catalog Terminal overlay is active, route events there
+    if (terminalUI.isVisible()) {
+        terminalUI.handleEvent(event, catalog);
+    }
+
+    if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>()) {
+        // Toggle Terminal Overlay
+        if (keyPressed->scancode == sf::Keyboard::Scan::Tab) {
+            terminalUI.toggle();
+            currentState = terminalUI.isVisible() ? GameState::CatalogUIState : GameState::GameplayState;
+            if (terminalUI.isVisible()) {
+                terminalUI.executeBinarySearch(catalog);
+            }
+        }
+        // Pause Menu
+        else if (keyPressed->scancode == sf::Keyboard::Scan::Escape) {
+            if (terminalUI.isVisible()) {
+                terminalUI.close();
+                currentState = GameState::GameplayState;
+            } else {
+                currentState = GameState::PauseState;
+            }
+        }
+        // Interaction Key (E or Spacebar)
+        else if (keyPressed->scancode == sf::Keyboard::Scan::E || keyPressed->scancode == sf::Keyboard::Scan::Space) {
+            sf::Vector2f pPos = player.getPosition();
+
+            // 1. Check computer desk proximity
+            if (map.isNearComputerTerminal(pPos)) {
+                terminalUI.open();
+                currentState = GameState::CatalogUIState;
+                terminalUI.executeBinarySearch(catalog);
+                return;
+            }
+
+            // 2. Check checkout counter proximity (Serve patron or return book)
+            if (map.isNearCheckoutCounter(pPos)) {
+                if (player.isCarrying()) {
+                    std::string feedback;
+                    if (patronMgr.serveHeadPatron(player.getCarriedISBN(), catalog, feedback)) {
+                        player.dropOrIssueBook();
+                        player.addScore(150);
+                        player.incrementServed();
+                        showNotification(feedback);
+
+                        TransactionRecord tx;
+                        tx.id = rand() % 9000 + 1000;
+                        tx.isbn = player.getCarriedISBN();
+                        strncpy_s(tx.action, "LOAN_ISSUED", sizeof(tx.action));
+                        tx.scoreDelta = 150;
+                        BinaryFileManager::logTransaction(tx);
+                    } else {
+                        showNotification(feedback);
+                    }
+                } else {
+                    showNotification("You are not carrying any book to issue!");
+                }
+                return;
+            }
+
+            // 3. Check bookshelf proximity (Retrieve book)
+            int shelfId = map.getInteractingShelf(pPos);
+            if (shelfId > 0) {
+                auto shelfBooks = catalog.getBooksByShelf(shelfId);
+                if (!shelfBooks.empty()) {
+                    const auto& b = shelfBooks[0];
+                    if (player.pickUpBook(b.isbn, b.title, shelfId)) {
+                        catalog.borrowBook(b.isbn);
+                        showNotification("Retrieved: '" + std::string(b.title) + "' from Shelf #" + std::to_string(shelfId));
+                    } else {
+                        showNotification("Inventory full! Librarian can only hold " + std::to_string(player.getData().booksCapacity) + " books.");
+                    }
+                }
+                return;
+            }
+        }
+    }
+}
+
+void GameEngine::handlePauseInput(const sf::Event& event) {
+    if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>()) {
+        if (keyPressed->scancode == sf::Keyboard::Scan::W || keyPressed->scancode == sf::Keyboard::Scan::Up) {
+            selectedPauseIndex = (selectedPauseIndex - 1 + static_cast<int>(pauseOptions.size())) % pauseOptions.size();
+        }
+        else if (keyPressed->scancode == sf::Keyboard::Scan::S || keyPressed->scancode == sf::Keyboard::Scan::Down) {
+            selectedPauseIndex = (selectedPauseIndex + 1) % pauseOptions.size();
+        }
+        else if (keyPressed->scancode == sf::Keyboard::Scan::Enter || keyPressed->scancode == sf::Keyboard::Scan::Space) {
+            if (selectedPauseIndex == 0) { // Resume
+                currentState = GameState::GameplayState;
+            }
+            else if (selectedPauseIndex == 1) { // Save Game
+                BinaryFileManager::saveCatalog(catalog.getBooks());
+                BinaryFileManager::saveGameState(player.getData(), patronMgr.getPatrons());
+                showNotification("Game state successfully flushed to catalog.dat & savegame.bin!");
+            }
+            else if (selectedPauseIndex == 2) { // Terminal
+                terminalUI.open();
+                currentState = GameState::CatalogUIState;
+            }
+            else if (selectedPauseIndex == 3) { // Main Menu
+                currentState = GameState::MainMenuState;
+            }
+        }
+        else if (keyPressed->scancode == sf::Keyboard::Scan::Escape) {
+            currentState = GameState::GameplayState;
+        }
+    }
+}
+
+void GameEngine::handleGameOverInput(const sf::Event& event) {
+    if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>()) {
+        if (keyPressed->scancode == sf::Keyboard::Scan::Enter || keyPressed->scancode == sf::Keyboard::Scan::Space) {
+            // Save high score
+            HighScoreRecord rec;
+            strncpy_s(rec.playerName, player.getData().name, sizeof(rec.playerName));
+            rec.score = player.getData().score;
+            rec.dayReached = player.getData().day;
+            rec.patronsServed = player.getData().patronsServed;
+            strncpy_s(rec.dateString, "2026-11-19", sizeof(rec.dateString));
+            highScores.push_back(rec);
+            BinaryFileManager::saveHighScores(highScores);
+
+            // Reset Game
+            player = PlayerEntity();
+            patronMgr.initialize(catalog);
+            currentState = GameState::MainMenuState;
+        }
+    }
+}
+
+void GameEngine::handleLeaderboardInput(const sf::Event& event) {
+    if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>()) {
+        if (keyPressed->scancode == sf::Keyboard::Scan::Escape || keyPressed->scancode == sf::Keyboard::Scan::Enter) {
+            currentState = GameState::MainMenuState;
+        }
+    }
+}
+
+void GameEngine::renderMainMenu() {
+    // Header
+    sf::RectangleShape banner(sf::Vector2f(720.f, 90.f));
+    banner.setPosition(sf::Vector2f(40.f, 60.f));
+    banner.setFillColor(sf::Color(45, 60, 95));
+    banner.setOutlineColor(sf::Color(210, 180, 80));
+    banner.setOutlineThickness(3.f);
+    window.draw(banner);
+
+    sf::Text title(font, "BIBLIOTHECA QUEST", 28);
+    title.setFillColor(sf::Color(255, 235, 170));
+    title.setStyle(sf::Text::Bold);
+    title.setPosition(sf::Vector2f(210.f, 75.f));
+    window.draw(title);
+
+    sf::Text subtitle(font, "The Ultimate 2D Library Simulation & Management Game", 13);
+    subtitle.setFillColor(sf::Color::White);
+    subtitle.setPosition(sf::Vector2f(220.f, 115.f));
+    window.draw(subtitle);
+
+    // Options
+    for (size_t i = 0; i < menuOptions.size(); ++i) {
+        sf::RectangleShape btn(sf::Vector2f(340.f, 42.f));
+        btn.setPosition(sf::Vector2f(230.f, 200.f + i * 58.f));
+
+        if (static_cast<int>(i) == selectedMenuIndex) {
+            btn.setFillColor(sf::Color(70, 130, 200));
+            btn.setOutlineColor(sf::Color::Yellow);
+            btn.setOutlineThickness(2.5f);
+        } else {
+            btn.setFillColor(sf::Color(50, 60, 75));
+            btn.setOutlineColor(sf::Color(100, 110, 130));
+            btn.setOutlineThickness(1.5f);
+        }
+        window.draw(btn);
+
+        sf::Text optText(font, menuOptions[i], 14);
+        optText.setFillColor(sf::Color::White);
+        optText.setStyle(sf::Text::Bold);
+        optText.setPosition(sf::Vector2f(280.f, 210.f + i * 58.f));
+        window.draw(optText);
+    }
+
+    // Footer credits
+    sf::Text credits(font, "Developed by Muhammad Talha | Roll No: 26L-0755 | Group 15", 11);
+    credits.setFillColor(sf::Color(70, 70, 70));
+    credits.setPosition(sf::Vector2f(200.f, 560.f));
+    window.draw(credits);
+}
+
+void GameEngine::renderGameplay() {
+    // 1. Draw Map & Furniture
+    map.render(window, font);
+
+    // 2. Draw AI Patrons
+    patronMgr.render(window, font);
+
+    // 3. Draw Player Librarian
+    player.render(window, font);
+
+    // 4. Draw HUD (Heads-Up Display)
+    renderHUD();
+
+    // 5. Draw Terminal UI if active
+    if (terminalUI.isVisible()) {
+        terminalUI.render(window, font);
+    }
+
+    // 6. Interaction Proximity Prompt
+    sf::Vector2f pPos = player.getPosition();
+    std::string promptStr = "";
+    if (map.isNearComputerTerminal(pPos)) {
+        promptStr = "[E / TAB] Access Catalog Terminal";
+    } else if (map.isNearCheckoutCounter(pPos)) {
+        promptStr = player.isCarrying() ? "[E] Issue Book to Waiting Patron" : "Checkout Desk (Need book to issue)";
+    } else {
+        int sId = map.getInteractingShelf(pPos);
+        if (sId > 0) {
+            promptStr = "[E] Retrieve Book from Shelf #" + std::to_string(sId);
+        }
+    }
+
+    if (!promptStr.empty()) {
+        sf::RectangleShape promptBox(sf::Vector2f(320.f, 26.f));
+        promptBox.setPosition(sf::Vector2f(240.f, 520.f));
+        promptBox.setFillColor(sf::Color(20, 20, 20, 210));
+        promptBox.setOutlineColor(sf::Color(240, 210, 70));
+        promptBox.setOutlineThickness(1.5f);
+        window.draw(promptBox);
+
+        sf::Text pText(font, promptStr, 11);
+        pText.setFillColor(sf::Color::Yellow);
+        pText.setStyle(sf::Text::Bold);
+        pText.setPosition(sf::Vector2f(250.f, 524.f));
+        window.draw(pText);
+    }
+
+    // 7. Notification banner
+    if (notificationTimer > 0.0f) {
+        sf::RectangleShape banner(sf::Vector2f(500.f, 32.f));
+        banner.setPosition(sf::Vector2f(150.f, 15.f));
+        banner.setFillColor(sf::Color(30, 45, 75, 230));
+        banner.setOutlineColor(sf::Color::White);
+        banner.setOutlineThickness(1.5f);
+        window.draw(banner);
+
+        sf::Text notif(font, notificationMsg, 11);
+        notif.setFillColor(sf::Color::White);
+        notif.setStyle(sf::Text::Bold);
+        notif.setPosition(sf::Vector2f(165.f, 22.f));
+        window.draw(notif);
+    }
+}
+
+void GameEngine::renderHUD() {
+    // Exact styled HUD matching proposal screenshot!
+    sf::RectangleShape hudPanel(sf::Vector2f(260.f, 120.f));
+    hudPanel.setFillColor(sf::Color(20, 25, 35, 230));
+    hudPanel.setOutlineColor(sf::Color(190, 190, 190));
+    hudPanel.setOutlineThickness(2.f);
+    hudPanel.setPosition(sf::Vector2f(12.f, 465.f));
+    window.draw(hudPanel);
+
+    const auto& p = player.getData();
+    int hours = static_cast<int>(p.timeOfDay);
+    int minutes = static_cast<int>((p.timeOfDay - hours) * 60.0f);
+    std::string ampm = (hours >= 12) ? "PM" : "AM";
+    int displayHours = (hours > 12) ? hours - 12 : hours;
+    if (displayHours == 0) displayHours = 12;
+
+    std::ostringstream ss;
+    ss << std::setfill('0') << std::setw(2) << displayHours << ":"
+       << std::setfill('0') << std::setw(2) << minutes << " " << ampm;
+
+    std::string hudString = 
+        "LIBRARIAN: " + std::string(p.name) + "\n" +
+        "BOOKS: " + std::to_string(p.booksHeld) + "/" + std::to_string(p.booksCapacity) + "\n" +
+        "PATRONS WAITING: " + std::to_string(patronMgr.getWaitingPatronCount()) + "\n" +
+        "TIME: " + ss.str() + "\n" +
+        "DAY: " + std::to_string(p.day) + " | SCORE: " + std::to_string(p.score);
+
+    sf::Text hudText(font, hudString, 12);
+    hudText.setFillColor(sf::Color::White);
+    hudText.setStyle(sf::Text::Bold);
+    hudText.setPosition(sf::Vector2f(24.f, 473.f));
+    window.draw(hudText);
+}
+
+void GameEngine::renderPauseMenu() {
+    // Semi-transparent backdrop overlay
+    sf::RectangleShape dim(sf::Vector2f(800.f, 600.f));
+    dim.setFillColor(sf::Color(0, 0, 0, 170));
+    window.draw(dim);
+
+    // Pause Dialog Box
+    sf::RectangleShape pauseBox(sf::Vector2f(340.f, 300.f));
+    pauseBox.setPosition(sf::Vector2f(230.f, 150.f));
+    pauseBox.setFillColor(sf::Color(35, 45, 60, 240));
+    pauseBox.setOutlineColor(sf::Color(220, 190, 80));
+    pauseBox.setOutlineThickness(3.f);
+    window.draw(pauseBox);
+
+    sf::Text pauseTitle(font, "GAME PAUSED", 20);
+    pauseTitle.setFillColor(sf::Color::Yellow);
+    pauseTitle.setStyle(sf::Text::Bold);
+    pauseTitle.setPosition(sf::Vector2f(325.f, 170.f));
+    window.draw(pauseTitle);
+
+    for (size_t i = 0; i < pauseOptions.size(); ++i) {
+        sf::RectangleShape btn(sf::Vector2f(280.f, 36.f));
+        btn.setPosition(sf::Vector2f(260.f, 220.f + i * 48.f));
+
+        if (static_cast<int>(i) == selectedPauseIndex) {
+            btn.setFillColor(sf::Color(70, 130, 200));
+            btn.setOutlineColor(sf::Color::Yellow);
+            btn.setOutlineThickness(2.f);
+        } else {
+            btn.setFillColor(sf::Color(45, 55, 70));
+            btn.setOutlineColor(sf::Color(100, 110, 130));
+            btn.setOutlineThickness(1.f);
+        }
+        window.draw(btn);
+
+        sf::Text optText(font, pauseOptions[i], 12);
+        optText.setFillColor(sf::Color::White);
+        optText.setStyle(sf::Text::Bold);
+        optText.setPosition(sf::Vector2f(280.f, 230.f + i * 48.f));
+        window.draw(optText);
+    }
+}
+
+void GameEngine::renderGameOver() {
+    sf::RectangleShape box(sf::Vector2f(500.f, 360.f));
+    box.setPosition(sf::Vector2f(150.f, 120.f));
+    box.setFillColor(sf::Color(40, 20, 25, 245));
+    box.setOutlineColor(sf::Color(220, 50, 50));
+    box.setOutlineThickness(4.f);
+    window.draw(box);
+
+    sf::Text goTitle(font, "LIBRARY OPERATIONAL FAILURE", 22);
+    goTitle.setFillColor(sf::Color(255, 70, 70));
+    goTitle.setStyle(sf::Text::Bold);
+    goTitle.setPosition(sf::Vector2f(210.f, 145.f));
+    window.draw(goTitle);
+
+    const auto& p = player.getData();
+    std::string summary = 
+        "Patrons' patience expired! The library reputational rating collapsed.\n\n"
+        "FINAL STATISTICS:\n"
+        "  - Head Librarian  : " + std::string(p.name) + "\n"
+        "  - Final Score     : " + std::to_string(p.score) + "\n"
+        "  - Days Managed    : " + std::to_string(p.day) + "\n"
+        "  - Patrons Served  : " + std::to_string(p.patronsServed) + "\n"
+        "  - Patrons Lost    : " + std::to_string(p.patronsLost) + "\n\n"
+        "Press [ENTER] or [SPACE] to Save Score & Return to Menu.";
+
+    sf::Text sumText(font, summary, 12);
+    sumText.setFillColor(sf::Color::White);
+    sumText.setPosition(sf::Vector2f(180.f, 200.f));
+    window.draw(sumText);
+}
+
+void GameEngine::renderLeaderboard() {
+    sf::RectangleShape box(sf::Vector2f(600.f, 440.f));
+    box.setPosition(sf::Vector2f(100.f, 80.f));
+    box.setFillColor(sf::Color(30, 40, 55, 245));
+    box.setOutlineColor(sf::Color(210, 180, 70));
+    box.setOutlineThickness(3.f);
+    window.draw(box);
+
+    sf::Text lbTitle(font, "HIGH SCORES & HALL OF FAME", 20);
+    lbTitle.setFillColor(sf::Color::Yellow);
+    lbTitle.setStyle(sf::Text::Bold);
+    lbTitle.setPosition(sf::Vector2f(230.f, 105.f));
+    window.draw(lbTitle);
+
+    // Table Header
+    sf::Text head(font, "RANK   LIBRARIAN              SCORE    DAYS   SERVED    DATE", 11);
+    head.setFillColor(sf::Color::Cyan);
+    head.setStyle(sf::Text::Bold);
+    head.setPosition(sf::Vector2f(130.f, 150.f));
+    window.draw(head);
+
+    for (size_t i = 0; i < highScores.size() && i < 8; ++i) {
+        const auto& hs = highScores[i];
+        std::ostringstream ss;
+        ss << "#" << (i + 1) << "     "
+           << std::left << std::setw(22) << hs.playerName
+           << std::right << std::setw(6) << hs.score << "    "
+           << std::setw(4) << hs.dayReached << "    "
+           << std::setw(6) << hs.patronsServed << "    "
+           << hs.dateString;
+
+        sf::Text row(font, ss.str(), 11);
+        row.setFillColor(sf::Color::White);
+        row.setPosition(sf::Vector2f(130.f, 180.f + i * 28.f));
+        window.draw(row);
+    }
+
+    sf::Text exitPrompt(font, "Press [ESC] or [ENTER] to return to Main Menu", 11);
+    exitPrompt.setFillColor(sf::Color(180, 180, 180));
+    exitPrompt.setPosition(sf::Vector2f(250.f, 480.f));
+    window.draw(exitPrompt);
+}
