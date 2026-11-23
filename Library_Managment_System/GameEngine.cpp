@@ -87,6 +87,9 @@ void GameEngine::run() {
                 case GameState::LeaderboardState:
                     handleLeaderboardInput(*event);
                     break;
+                case GameState::HowToPlayState:
+                    handleHowToPlayInput(*event);
+                    break;
             }
         }
 
@@ -129,6 +132,9 @@ void GameEngine::run() {
             case GameState::LeaderboardState:
                 renderLeaderboard();
                 break;
+            case GameState::HowToPlayState:
+                renderHowToPlay();
+                break;
         }
 
         window.display();
@@ -163,13 +169,8 @@ void GameEngine::handleMainMenuInput(const sf::Event& event) {
                 BinaryFileManager::loadHighScores(highScores);
                 currentState = GameState::LeaderboardState;
             }
-            else if (selectedMenuIndex == 3) { // How to play / Terminal info
-                std::cout << "\n[HOW TO PLAY BIBLIOTHECA QUEST]:\n"
-                          << "1. Move Librarian Talha using W/A/S/D or Arrow keys.\n"
-                          << "2. Open Terminal overlay with TAB or by standing at the Computer Desk.\n"
-                          << "3. Search for books via ISBN (O(log N) Binary) or Title (O(N) Linear).\n"
-                          << "4. Retrieve books from shelves with [E]. Issue books to patrons with [E].\n"
-                          << "5. Save and Pause anytime with [ESC].\n\n";
+            else if (selectedMenuIndex == 3) { // How to play
+                currentState = GameState::HowToPlayState;
             }
             else if (selectedMenuIndex == 4) { // Exit
                 window.close();
@@ -219,6 +220,7 @@ void GameEngine::handleGameplayInput(const sf::Event& event) {
                 if (player.isCarrying()) {
                     std::string feedback;
                     if (patronMgr.serveHeadPatron(player.getCarriedISBN(), catalog, feedback)) {
+                        const int issuedIsbn = player.getCarriedISBN();
                         player.dropOrIssueBook();
                         player.addScore(150);
                         player.incrementServed();
@@ -226,12 +228,13 @@ void GameEngine::handleGameplayInput(const sf::Event& event) {
 
                         TransactionRecord tx;
                         tx.id = rand() % 9000 + 1000;
-                        tx.isbn = player.getCarriedISBN();
+                        tx.isbn = issuedIsbn;
                         strncpy_s(tx.action, "LOAN_ISSUED", sizeof(tx.action));
                         tx.scoreDelta = 150;
                         BinaryFileManager::logTransaction(tx);
                     } else {
-                        showNotification(feedback);
+                        player.addScore(-25);
+                        showNotification(feedback + " (-25 points)", 4.0f);
                     }
                 } else {
                     showNotification("You are not carrying any book to issue!");
@@ -247,7 +250,8 @@ void GameEngine::handleGameplayInput(const sf::Event& event) {
                     const auto& b = shelfBooks[0];
                     if (player.pickUpBook(b.isbn, b.title, shelfId)) {
                         catalog.borrowBook(b.isbn);
-                        showNotification("Retrieved: '" + std::string(b.title) + "' from Shelf #" + std::to_string(shelfId));
+                        showNotification("COLLECTED: '" + std::string(b.title) + "' (ISBN " +
+                                         std::to_string(b.isbn) + ")", 4.0f);
                     } else {
                         showNotification("Inventory full! Librarian can only hold " + std::to_string(player.getData().booksCapacity) + " books.");
                     }
@@ -318,6 +322,16 @@ void GameEngine::handleLeaderboardInput(const sf::Event& event) {
     }
 }
 
+void GameEngine::handleHowToPlayInput(const sf::Event& event) {
+    if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>()) {
+        if (keyPressed->scancode == sf::Keyboard::Scan::Escape ||
+            keyPressed->scancode == sf::Keyboard::Scan::Enter ||
+            keyPressed->scancode == sf::Keyboard::Scan::Space) {
+            currentState = GameState::MainMenuState;
+        }
+    }
+}
+
 void GameEngine::renderMainMenu() {
     // Header
     sf::RectangleShape banner(sf::Vector2f(720.f, 90.f));
@@ -370,7 +384,7 @@ void GameEngine::renderMainMenu() {
 
 void GameEngine::renderGameplay() {
     // 1. Draw Map & Furniture
-    map.render(window, font);
+    map.render(window, font, terminalUI.getHighlightedShelfId());
 
     // 2. Draw AI Patrons
     patronMgr.render(window, font);
@@ -380,6 +394,19 @@ void GameEngine::renderGameplay() {
 
     // 4. Draw HUD (Heads-Up Display)
     renderHUD();
+
+    // Keep the most important controls visible for new players.
+    sf::RectangleShape controlsBox(sf::Vector2f(255.f, 45.f));
+    controlsBox.setPosition(sf::Vector2f(530.f, 535.f));
+    controlsBox.setFillColor(sf::Color(20, 25, 35, 220));
+    controlsBox.setOutlineColor(sf::Color(190, 190, 190));
+    controlsBox.setOutlineThickness(1.5f);
+    window.draw(controlsBox);
+
+    sf::Text controlsText(font, "MOVE: WASD / ARROWS   ACTION: E\nCATALOG: TAB          PAUSE: ESC", 10);
+    controlsText.setFillColor(sf::Color::White);
+    controlsText.setPosition(sf::Vector2f(540.f, 543.f));
+    window.draw(controlsText);
 
     // 5. Draw Terminal UI if active
     if (terminalUI.isVisible()) {
@@ -401,17 +428,17 @@ void GameEngine::renderGameplay() {
     }
 
     if (!promptStr.empty()) {
-        sf::RectangleShape promptBox(sf::Vector2f(320.f, 26.f));
-        promptBox.setPosition(sf::Vector2f(240.f, 520.f));
+        sf::RectangleShape promptBox(sf::Vector2f(420.f, 34.f));
+        promptBox.setPosition(sf::Vector2f(190.f, 510.f));
         promptBox.setFillColor(sf::Color(20, 20, 20, 210));
         promptBox.setOutlineColor(sf::Color(240, 210, 70));
         promptBox.setOutlineThickness(1.5f);
         window.draw(promptBox);
 
-        sf::Text pText(font, promptStr, 11);
+        sf::Text pText(font, promptStr, 14);
         pText.setFillColor(sf::Color::Yellow);
         pText.setStyle(sf::Text::Bold);
-        pText.setPosition(sf::Vector2f(250.f, 524.f));
+        pText.setPosition(sf::Vector2f(205.f, 517.f));
         window.draw(pText);
     }
 
@@ -434,7 +461,7 @@ void GameEngine::renderGameplay() {
 
 void GameEngine::renderHUD() {
     // Exact styled HUD matching proposal screenshot!
-    sf::RectangleShape hudPanel(sf::Vector2f(260.f, 120.f));
+    sf::RectangleShape hudPanel(sf::Vector2f(300.f, 125.f));
     hudPanel.setFillColor(sf::Color(20, 25, 35, 230));
     hudPanel.setOutlineColor(sf::Color(190, 190, 190));
     hudPanel.setOutlineThickness(2.f);
@@ -455,6 +482,7 @@ void GameEngine::renderHUD() {
     std::string hudString = 
         "LIBRARIAN: " + std::string(p.name) + "\n" +
         "BOOKS: " + std::to_string(p.booksHeld) + "/" + std::to_string(p.booksCapacity) + "\n" +
+        "CARRYING: " + std::string(p.isCarryingBook ? p.carriedBookTitle : "Nothing") + "\n" +
         "PATRONS WAITING: " + std::to_string(patronMgr.getWaitingPatronCount()) + "\n" +
         "TIME: " + ss.str() + "\n" +
         "DAY: " + std::to_string(p.day) + " | SCORE: " + std::to_string(p.score);
@@ -464,6 +492,42 @@ void GameEngine::renderHUD() {
     hudText.setStyle(sf::Text::Bold);
     hudText.setPosition(sf::Vector2f(24.f, 473.f));
     window.draw(hudText);
+}
+
+void GameEngine::renderHowToPlay() {
+    sf::RectangleShape panel(sf::Vector2f(650.f, 480.f));
+    panel.setPosition(sf::Vector2f(75.f, 55.f));
+    panel.setFillColor(sf::Color(30, 40, 55, 245));
+    panel.setOutlineColor(sf::Color(210, 180, 70));
+    panel.setOutlineThickness(3.f);
+    window.draw(panel);
+
+    sf::Text heading(font, "HOW TO PLAY", 26);
+    heading.setFillColor(sf::Color::Yellow);
+    heading.setStyle(sf::Text::Bold);
+    heading.setPosition(sf::Vector2f(285.f, 78.f));
+    window.draw(heading);
+
+    const std::string instructions =
+        "YOUR JOB\n"
+        "Serve each patron before their patience bar becomes empty.\n\n"
+        "1. Read the book title and ISBN in the patron's request box.\n"
+        "2. Press TAB to open the catalog and search for that book.\n"
+        "3. Close the catalog and walk to the highlighted shelf.\n"
+        "4. Press E near the shelf to collect the book.\n"
+        "5. Walk to the checkout counter and press E to issue it.\n\n"
+        "CONTROLS\n"
+        "WASD / Arrow Keys  - Move the librarian\n"
+        "E or Space         - Collect or issue a book\n"
+        "TAB                - Open or close the catalog\n"
+        "ESC                - Pause and save\n\n"
+        "Correct book: +150 points    Wrong book: -25 points\n\n"
+        "Press ENTER, SPACE, or ESC to return to the main menu.";
+
+    sf::Text helpText(font, instructions, 14);
+    helpText.setFillColor(sf::Color::White);
+    helpText.setPosition(sf::Vector2f(110.f, 130.f));
+    window.draw(helpText);
 }
 
 void GameEngine::renderPauseMenu() {

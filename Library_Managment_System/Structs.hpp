@@ -162,7 +162,8 @@ enum class GameState {
     CatalogUIState,
     PauseState,
     GameOverState,
-    LeaderboardState
+    LeaderboardState,
+    HowToPlayState
 };
 
 // Search mode and result structures

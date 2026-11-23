@@ -47,6 +47,7 @@ private:
     void handlePauseInput(const sf::Event& event);
     void handleGameOverInput(const sf::Event& event);
     void handleLeaderboardInput(const sf::Event& event);
+    void handleHowToPlayInput(const sf::Event& event);
 
     void renderMainMenu();
     void renderGameplay();
@@ -54,6 +55,7 @@ private:
     void renderPauseMenu();
     void renderGameOver();
     void renderLeaderboard();
+    void renderHowToPlay();
     void showNotification(const std::string& msg, float duration = 3.0f);
 
 public:

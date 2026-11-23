@@ -16,7 +16,7 @@ public:
     LibraryMap();
 
     void initialize();
-    void render(sf::RenderWindow& window, const sf::Font& font);
+    void render(sf::RenderWindow& window, const sf::Font& font, int highlightedShelfId = 0);
 
     // Spatial queries & interaction detection
     bool checkCollision(const sf::FloatRect& entityBounds) const;

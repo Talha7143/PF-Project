@@ -1,11 +1,13 @@
 #include "Player.hpp"
+#include "Config.hpp"
 #include <cstring>
 #include <cmath>
+#include <algorithm>
 
 PlayerEntity::PlayerEntity() {
     strncpy_s(data.name, "Talha", sizeof(data.name));
     data.position = Vector2D(400.0f, 320.0f);
-    data.speed = 4.5f;
+    data.speed = Config::PLAYER_DEFAULT_SPEED;
     data.score = 1250;
     data.day = 4;
     data.timeOfDay = 10.75f; // 10:45 AM
@@ -53,17 +55,25 @@ void PlayerEntity::update(float dt, const LibraryMap& map) {
             animTimer = 0.0f;
         }
 
-        float deltaDist = data.speed * (dt * 60.0f);
+        const float deltaDist = data.speed * (dt * 60.0f);
 
-        // Axis-independent collision checking for smooth sliding along obstacles
-        sf::FloatRect newBoundsX({ (data.position.x + moveVec.x * deltaDist) - 14.f, data.position.y - 18.f }, { 28.f, 36.f });
-        if (!map.checkCollision(newBoundsX)) {
-            data.position.x += moveVec.x * deltaDist;
-        }
+        // Move in small steps so a fast player cannot skip through furniture.
+        const int moveSteps = std::max(1, static_cast<int>(std::ceil(deltaDist / 3.0f)));
+        const float stepDistance = deltaDist / static_cast<float>(moveSteps);
+        for (int step = 0; step < moveSteps; ++step) {
+            sf::FloatRect newBoundsX(
+                { (data.position.x + moveVec.x * stepDistance) - 14.f, data.position.y - 18.f },
+                { 28.f, 36.f });
+            if (!map.checkCollision(newBoundsX)) {
+                data.position.x += moveVec.x * stepDistance;
+            }
 
-        sf::FloatRect newBoundsY({ data.position.x - 14.f, (data.position.y + moveVec.y * deltaDist) - 18.f }, { 28.f, 36.f });
-        if (!map.checkCollision(newBoundsY)) {
-            data.position.y += moveVec.y * deltaDist;
+            sf::FloatRect newBoundsY(
+                { data.position.x - 14.f, (data.position.y + moveVec.y * stepDistance) - 18.f },
+                { 28.f, 36.f });
+            if (!map.checkCollision(newBoundsY)) {
+                data.position.y += moveVec.y * stepDistance;
+            }
         }
     } else {
         animFrame = 0;
