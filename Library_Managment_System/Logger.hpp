@@ -4,11 +4,6 @@
 #include <fstream>
 #include <iostream>
 
-// ============================================================================
-// Logger: Unified Diagnostic Logging Subsystem
-// Formats console timestamps and handles system log categorization
-// ============================================================================
-
 enum class LogLevel {
     INFO,
     SYSTEM,
