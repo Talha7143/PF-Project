@@ -4,10 +4,6 @@
 #include "Structs.hpp"
 #include <vector>
 
-// ============================================================================
-// LibraryMap: 2D Interactive SFML Rendering & Spatial Collision Architecture
-// Renders Bookshelves, Checkout Desk, Reading Stations, Signs & Barrier Collision
-// ============================================================================
 
 class LibraryMap {
 private:
