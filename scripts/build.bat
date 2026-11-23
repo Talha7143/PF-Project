@@ -1,8 +1,4 @@
 @echo off
-REM ============================================================================
-REM Bibliotheca Quest: Automated Windows Build Script
-REM Compiles project using MSBuild and SFML 3.1.0 (x64 Debug)
-REM ============================================================================
 
 echo [BUILD]: Detecting Visual Studio MSBuild installation...
 set "MSBUILD_PATH=C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe"
