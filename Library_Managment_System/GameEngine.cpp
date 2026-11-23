@@ -384,7 +384,7 @@ void GameEngine::renderMainMenu() {
 
 void GameEngine::renderGameplay() {
     // 1. Draw Map & Furniture
-    map.render(window, font, terminalUI.getHighlightedShelfId());
+    map.render(window, font, catalog, terminalUI.getHighlightedShelfId());
 
     // 2. Draw AI Patrons
     patronMgr.render(window, font);
