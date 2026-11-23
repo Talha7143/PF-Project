@@ -1,8 +1,4 @@
 @echo off
-REM ============================================================================
-REM Bibliotheca Quest: Automated Run & Launch Script
-REM Checks SFML DLLs and launches the game executable
-REM ============================================================================
 
 set "BIN_DIR=%~dp0..\Library_Managment_System\x64\Debug"
 set "EXE_PATH=%BIN_DIR%\Library_Managment_System.exe"
