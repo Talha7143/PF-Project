@@ -26,51 +26,51 @@ void Catalog::initializeDefaultCatalog() {
 
     DefaultEntry initialEntries[] = {
         // Shelf A1 - Fiction Classic
-        { 1001, "Introduction to Algorithms", "Cormen, Leiserson, Rivest", "Academic", "Shelf A1", 1, 10, 4, 4 },
-        { 1002, "Object-Oriented Programming in C++", "Bjarne Stroustrup", "Academic", "Shelf A1", 1, 10, 4, 3 },
-        { 1003, "Database System Concepts", "Silberschatz, Korth, Sudarshan", "Academic", "Shelf A1", 1, 10, 4, 5 },
-        { 1004, "Computer Systems: A Programmer's Perspective", "Randal E. Bryant", "Academic", "Shelf A1", 1, 10, 4, 5 },
-        { 1005, "The C++ Programming Language", "Bjarne Stroustrup", "Academic", "Shelf A1", 1, 10, 4, 4 },
-        { 1006, "Operating System Concepts", "Abraham Silberschatz", "Academic", "Shelf A1", 1, 10, 4, 3 },
-        { 1007, "Clean Code: A Handbook of Agile Craft", "Robert C. Martin", "Academic", "Shelf A1", 1, 10, 4, 6 },
-        { 1008, "Design Patterns: Elements of Reusable Code", "Erich Gamma et al.", "Academic", "Shelf A1", 1, 10, 4, 2 },
+        { 1001, "Introduction to Algorithms", "Cormen, Leiserson, Rivest", "Academic", "Shelf C1", 3, 35, 4, 4 },
+        { 1002, "Object-Oriented Programming in C++", "Bjarne Stroustrup", "Academic", "Shelf C1", 3, 35, 4, 3 },
+        { 1003, "Database System Concepts", "Silberschatz, Korth, Sudarshan", "Academic", "Shelf C1", 3, 35, 4, 5 },
+        { 1004, "Computer Systems: A Programmer's Perspective", "Randal E. Bryant", "Academic", "Shelf C1", 3, 35, 4, 5 },
+        { 1005, "The C++ Programming Language", "Bjarne Stroustrup", "Academic", "Shelf C1", 3, 35, 4, 4 },
+        { 1006, "Operating System Concepts", "Abraham Silberschatz", "Academic", "Shelf C1", 3, 35, 4, 3 },
+        { 1007, "Clean Code: A Handbook of Agile Craft", "Robert C. Martin", "Academic", "Shelf C1", 3, 35, 4, 6 },
+        { 1008, "Design Patterns: Elements of Reusable Code", "Erich Gamma et al.", "Academic", "Shelf C1", 3, 35, 4, 2 },
 
         // Shelf A2 - Academic & Systems
-        { 1009, "Computer Networks", "Andrew S. Tanenbaum", "Academic", "Shelf A2", 2, 22, 4, 4 },
-        { 1010, "Modern Operating Systems", "Andrew S. Tanenbaum", "Academic", "Shelf A2", 2, 22, 4, 4 },
-        { 1011, "Structure and Interpretation of Computer Programs", "Harold Abelson", "Academic", "Shelf A2", 2, 22, 4, 2 },
-        { 1012, "Artificial Intelligence: A Modern Approach", "Stuart Russell, Peter Norvig", "Academic", "Shelf A2", 2, 22, 4, 5 },
-        { 1013, "Compilers: Principles, Techniques, and Tools", "Alfred V. Aho", "Academic", "Shelf A2", 2, 22, 4, 3 },
-        { 1014, "The Art of Computer Programming", "Donald E. Knuth", "Academic", "Shelf A2", 2, 22, 4, 2 },
-        { 1015, "Discrete Mathematics and Its Applications", "Kenneth H. Rosen", "Academic", "Shelf A2", 2, 22, 4, 6 },
+        { 1009, "Computer Networks", "Andrew S. Tanenbaum", "Academic", "Shelf C1", 3, 35, 4, 4 },
+        { 1010, "Modern Operating Systems", "Andrew S. Tanenbaum", "Academic", "Shelf C1", 3, 35, 4, 4 },
+        { 1011, "Structure and Interpretation of Computer Programs", "Harold Abelson", "Academic", "Shelf C1", 3, 35, 4, 2 },
+        { 1012, "Artificial Intelligence: A Modern Approach", "Stuart Russell, Peter Norvig", "Academic", "Shelf C1", 3, 35, 4, 5 },
+        { 1013, "Compilers: Principles, Techniques, and Tools", "Alfred V. Aho", "Academic", "Shelf C1", 3, 35, 4, 3 },
+        { 1014, "The Art of Computer Programming", "Donald E. Knuth", "Academic", "Shelf C1", 3, 35, 4, 2 },
+        { 1015, "Discrete Mathematics and Its Applications", "Kenneth H. Rosen", "Academic", "Shelf C1", 3, 35, 4, 6 },
 
         // Shelf B1 - Sci-Fi Masterpieces
-        { 2001, "Dune", "Frank Herbert", "Sci-Fi", "Shelf B1", 3, 35, 4, 7 },
-        { 2002, "Neuromancer", "William Gibson", "Sci-Fi", "Shelf B1", 3, 35, 4, 4 },
-        { 2003, "Foundation", "Isaac Asimov", "Sci-Fi", "Shelf B1", 3, 35, 4, 5 },
-        { 2004, "Snow Crash", "Neal Stephenson", "Sci-Fi", "Shelf B1", 3, 35, 4, 3 },
-        { 2005, "Do Androids Dream of Electric Sheep?", "Philip K. Dick", "Sci-Fi", "Shelf B1", 3, 35, 4, 4 },
-        { 2006, "2001: A Space Odyssey", "Arthur C. Clarke", "Sci-Fi", "Shelf B1", 3, 35, 4, 4 },
-        { 2007, "Hyperion", "Dan Simmons", "Sci-Fi", "Shelf B1", 3, 35, 4, 3 },
-        { 2008, "The Left Hand of Darkness", "Ursula K. Le Guin", "Sci-Fi", "Shelf B1", 3, 35, 4, 2 },
+        { 2001, "Dune", "Frank Herbert", "Sci-Fi", "Shelf B1", 2, 22, 4, 7 },
+        { 2002, "Neuromancer", "William Gibson", "Sci-Fi", "Shelf B1", 2, 22, 4, 4 },
+        { 2003, "Foundation", "Isaac Asimov", "Sci-Fi", "Shelf B1", 2, 22, 4, 5 },
+        { 2004, "Snow Crash", "Neal Stephenson", "Sci-Fi", "Shelf B1", 2, 22, 4, 3 },
+        { 2005, "Do Androids Dream of Electric Sheep?", "Philip K. Dick", "Sci-Fi", "Shelf B1", 2, 22, 4, 4 },
+        { 2006, "2001: A Space Odyssey", "Arthur C. Clarke", "Sci-Fi", "Shelf B1", 2, 22, 4, 4 },
+        { 2007, "Hyperion", "Dan Simmons", "Sci-Fi", "Shelf B1", 2, 22, 4, 3 },
+        { 2008, "The Left Hand of Darkness", "Ursula K. Le Guin", "Sci-Fi", "Shelf B1", 2, 22, 4, 2 },
 
         // Shelf B2 - Sci-Fi & Speculative
-        { 2009, "Ender's Game", "Orson Scott Card", "Sci-Fi", "Shelf B2", 4, 48, 4, 6 },
-        { 2010, "The Hitchhiker's Guide to the Galaxy", "Douglas Adams", "Sci-Fi", "Shelf B2", 4, 48, 4, 8 },
-        { 2011, "Fahrenheit 451", "Ray Bradbury", "Sci-Fi", "Shelf B2", 4, 48, 4, 5 },
-        { 2012, "Brave New World", "Aldous Huxley", "Sci-Fi", "Shelf B2", 4, 48, 4, 4 },
-        { 2013, "Solaris", "Stanislaw Lem", "Sci-Fi", "Shelf B2", 4, 48, 4, 3 },
-        { 2014, "The Three-Body Problem", "Cixin Liu", "Sci-Fi", "Shelf B2", 4, 48, 4, 5 },
+        { 2009, "Ender's Game", "Orson Scott Card", "Sci-Fi", "Shelf B1", 2, 22, 4, 6 },
+        { 2010, "The Hitchhiker's Guide to the Galaxy", "Douglas Adams", "Sci-Fi", "Shelf B1", 2, 22, 4, 8 },
+        { 2011, "Fahrenheit 451", "Ray Bradbury", "Sci-Fi", "Shelf B1", 2, 22, 4, 5 },
+        { 2012, "Brave New World", "Aldous Huxley", "Sci-Fi", "Shelf B1", 2, 22, 4, 4 },
+        { 2013, "Solaris", "Stanislaw Lem", "Sci-Fi", "Shelf B1", 2, 22, 4, 3 },
+        { 2014, "The Three-Body Problem", "Cixin Liu", "Sci-Fi", "Shelf B1", 2, 22, 4, 5 },
 
         // Shelf C1 - Fiction Literature
-        { 3001, "To Kill a Mockingbird", "Harper Lee", "Fiction", "Shelf C1", 5, 60, 4, 6 },
-        { 3002, "1984", "George Orwell", "Fiction", "Shelf C1", 5, 60, 4, 9 },
-        { 3003, "The Great Gatsby", "F. Scott Fitzgerald", "Fiction", "Shelf C1", 5, 60, 4, 5 },
-        { 3004, "Pride and Prejudice", "Jane Austen", "Fiction", "Shelf C1", 5, 60, 4, 4 },
-        { 3005, "The Catcher in the Rye", "J.D. Salinger", "Fiction", "Shelf C1", 5, 60, 4, 3 },
-        { 3006, "Crime and Punishment", "Fyodor Dostoevsky", "Fiction", "Shelf C1", 5, 60, 4, 4 },
-        { 3007, "The Hobbit", "J.R.R. Tolkien", "Fiction", "Shelf C1", 5, 60, 4, 7 },
-        { 3008, "One Hundred Years of Solitude", "Gabriel Garcia Marquez", "Fiction", "Shelf C1", 5, 60, 4, 3 }
+        { 3001, "To Kill a Mockingbird", "Harper Lee", "Fiction", "Shelf A1", 1, 10, 4, 6 },
+        { 3002, "1984", "George Orwell", "Fiction", "Shelf A1", 1, 10, 4, 9 },
+        { 3003, "The Great Gatsby", "F. Scott Fitzgerald", "Fiction", "Shelf A1", 1, 10, 4, 5 },
+        { 3004, "Pride and Prejudice", "Jane Austen", "Fiction", "Shelf A1", 1, 10, 4, 4 },
+        { 3005, "The Catcher in the Rye", "J.D. Salinger", "Fiction", "Shelf A1", 1, 10, 4, 3 },
+        { 3006, "Crime and Punishment", "Fyodor Dostoevsky", "Fiction", "Shelf A1", 1, 10, 4, 4 },
+        { 3007, "The Hobbit", "J.R.R. Tolkien", "Fiction", "Shelf A1", 1, 10, 4, 7 },
+        { 3008, "One Hundred Years of Solitude", "Gabriel Garcia Marquez", "Fiction", "Shelf A1", 1, 10, 4, 3 }
     };
 
     size_t count = sizeof(initialEntries) / sizeof(initialEntries[0]);
@@ -87,18 +87,27 @@ void Catalog::initializeDefaultCatalog() {
         snprintf(dynamicTitle, sizeof(dynamicTitle), "Special Collection Volume %zu", books.size() + 1);
         char dynamicAuthor[48];
         snprintf(dynamicAuthor, sizeof(dynamicAuthor), "Scholar Archon #%zu", books.size() + 1);
-        int shelfIdx = 1 + (int)(books.size() % 5);
-        char shelfLoc[24];
-        snprintf(shelfLoc, sizeof(shelfLoc), "Shelf %c%d", 'A' + (shelfIdx - 1), (int)(books.size() % 3) + 1);
-        
+        const char* genre = genreList[books.size() % 4];
+        int shelfIdx = 4;
+        const char* shelfLoc = "Shelf D1";
+        int gridX = 48;
+
+        if (std::string(genre) == "Fiction") {
+            shelfIdx = 1; shelfLoc = "Shelf A1"; gridX = 10;
+        } else if (std::string(genre) == "Sci-Fi") {
+            shelfIdx = 2; shelfLoc = "Shelf B1"; gridX = 22;
+        } else if (std::string(genre) == "Academic") {
+            shelfIdx = 3; shelfLoc = "Shelf C1"; gridX = 35;
+        }
+
         books.emplace_back(
             currentId++,
             dynamicTitle,
             dynamicAuthor,
-            genreList[books.size() % 4],
+            genre,
             shelfLoc,
             shelfIdx,
-            10 + (shelfIdx * 10),
+            gridX,
             4,
             3 + (int)(books.size() % 5)
         );
@@ -110,6 +119,28 @@ void Catalog::initializeDefaultCatalog() {
 void Catalog::setBooks(const std::vector<Book>& loadedBooks) {
     if (!loadedBooks.empty()) {
         books = loadedBooks;
+
+        // Migrate older saved catalogs to the four visible in-game shelf IDs.
+        for (auto& book : books) {
+            const std::string category = book.category;
+            if (category == "Fiction") {
+                book.shelfId = 1;
+                book.setLocation("Shelf A1");
+                book.gridX = 10;
+            } else if (category == "Sci-Fi") {
+                book.shelfId = 2;
+                book.setLocation("Shelf B1");
+                book.gridX = 22;
+            } else if (category == "Academic") {
+                book.shelfId = 3;
+                book.setLocation("Shelf C1");
+                book.gridX = 35;
+            } else {
+                book.shelfId = 4;
+                book.setLocation("Shelf D1");
+                book.gridX = 48;
+            }
+        }
         sortByISBN();
     }
 }
