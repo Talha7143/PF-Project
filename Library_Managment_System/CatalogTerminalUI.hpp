@@ -5,21 +5,15 @@
 #include "Catalog.hpp"
 #include <string>
 
-// ============================================================================
-// CatalogTerminalUI: In-Game Interactive Dual-Engine Search Interface
-// Features Text Input Boxes, Clickable Algorithm Triggers, and Real-Time Results
-// ============================================================================
-
 class CatalogTerminalUI {
 private:
     bool isOpen{ false };
     std::string isbnInput{ "1004" };
     std::string titleInput{ "Algorithms" };
-    int activeInputBox{ 0 }; // 0: ISBN, 1: Title
+    int activeInputBox{ 0 };
     SearchResult lastResult;
     bool hasSearched{ false };
 
-    // Layout rectangles
     sf::FloatRect modalBounds{ { 480.f, 220.f }, { 300.f, 260.f } };
     sf::FloatRect isbnBoxBounds{ { 530.f, 260.f }, { 230.f, 24.f } };
     sf::FloatRect titleBoxBounds{ { 530.f, 292.f }, { 230.f, 24.f } };
