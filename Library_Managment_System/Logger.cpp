@@ -28,11 +28,11 @@ void Logger::log(LogLevel level, const std::string& message) {
 void Logger::logSearch(const std::string& engine, int target, int ops, bool success) {
     std::cout << "\n" << getTimestamp() << " [SFML CATALOG TERMINAL - " << engine << "]\n";
     std::cout << "Target: " << target << "\n";
-    std::cout << "Status: " << (success ? "MATCH FOUND" : "NOT FOUND") 
+    std::cout << "Status: " << (success ? "MATCH FOUND" : "NOT FOUND")
               << " (Executed in " << ops << " operations)\n\n";
 }
 
 void Logger::logFileIO(const std::string& action, const std::string& filename, size_t count) {
-    std::cout << getTimestamp() << " [FILE SYSTEM]: " << action << " " << count 
+    std::cout << getTimestamp() << " [FILE SYSTEM]: " << action << " " << count
               << " records with '" << filename << "'...\n";
 }
