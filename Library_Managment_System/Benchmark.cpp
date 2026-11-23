@@ -49,9 +49,9 @@ void Benchmark::printComparisonReport(const BenchmarkResult& binRes, const Bench
     std::cout << "\n===================================================================\n";
     std::cout << "          ALGORITHMIC PERFORMANCE BENCHMARK (1,000 RUNS)           \n";
     std::cout << "===================================================================\n";
-    std::cout << std::left << std::setw(24) << "Algorithm" 
-              << std::setw(16) << "Total Time (us)" 
-              << std::setw(18) << "Avg Time (us/run)" 
+    std::cout << std::left << std::setw(24) << "Algorithm"
+              << std::setw(16) << "Total Time (us)"
+              << std::setw(18) << "Avg Time (us/run)"
               << std::setw(16) << "Total Ops" << "\n";
     std::cout << "-------------------------------------------------------------------\n";
     std::cout << std::left << std::setw(24) << binRes.algorithmName
