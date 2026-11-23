@@ -1,7 +1,7 @@
 #include "GameEngine.hpp"
 #include <iostream>
 #include <iomanip>
-#include <sstream>
+ #include <sstream>
 
 GameEngine::GameEngine()
     : window(sf::VideoMode({ 800, 600 }), "Bibliotheca Quest: The Ultimate Library Simulation & Management Game")
