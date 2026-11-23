@@ -1,12 +1,6 @@
 #include "GameEngine.hpp"
 #include <iostream>
 
-// ============================================================================
-// Bibliotheca Quest: The Ultimate Library Simulation & Management Game
-// Lead Developer: Muhammad Talha | Roll No: 26L-0755 | Group: 15
-// Course: Programming Fundamentals (Fall 2026) - FAST-NUCES Lahore
-// ============================================================================
-
 #ifndef COMPILED_WITH_MAIN_CPP
 int main() {
     std::cout << "========================================================\n";
