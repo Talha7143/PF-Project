@@ -9,14 +9,14 @@ PatronManager::PatronManager() {
 
 void PatronManager::initialize(Catalog& catalog) {
     patrons.clear();
-    // Spawn 4 initial patrons matching the proposal state
+
     for (int i = 0; i < 4; ++i) {
         spawnNewPatron(catalog);
     }
 }
 
 void PatronManager::spawnNewPatron(Catalog& catalog) {
-    if (patrons.size() >= 8) return; // Limit maximum active NPCs on screen
+    if (patrons.size() >= 8) return;
 
     Patron p;
     p.id = nextPatronId++;
@@ -24,7 +24,6 @@ void PatronManager::spawnNewPatron(Catalog& catalog) {
     const char* names[] = { "Ahmad", "Bilal", "Zainab", "Fatima", "Hamza", "Ayesha", "Usman", "Sarah" };
     strncpy_s(p.name, names[p.id % 8], sizeof(p.name));
 
-    // Start near bottom entrance door
     p.position = Vector2D(370.0f + static_cast<float>(rand() % 60), 555.0f);
     p.velocity = Vector2D(0.0f, 0.0f);
     p.state = PatronState::ENTERING;
@@ -32,12 +31,10 @@ void PatronManager::spawnNewPatron(Catalog& catalog) {
     p.maxPatience = 75.0f + static_cast<float>(rand() % 40);
     p.patience = p.maxPatience;
 
-    // Visual attributes
     p.colorR = static_cast<uint8_t>(100 + rand() % 140);
     p.colorG = static_cast<uint8_t>(80 + rand() % 140);
     p.colorB = static_cast<uint8_t>(120 + rand() % 130);
 
-    // Pick a requested book from the catalog
     const auto& books = catalog.getBooks();
     if (!books.empty()) {
         int idx = rand() % books.size();
@@ -56,7 +53,7 @@ void PatronManager::updatePatronAI(Patron& p, float dt, const LibraryMap& map) {
 
     switch (p.state) {
         case PatronState::ENTERING: {
-            // Walk up from entrance towards the counter waiting line
+
             Vector2D queueSlot(320.0f, 410.0f - p.queueIndex * 52.0f);
             if (p.queueIndex < 0) queueSlot = Vector2D(320.0f, 410.0f);
 
@@ -75,10 +72,9 @@ void PatronManager::updatePatronAI(Patron& p, float dt, const LibraryMap& map) {
         }
 
         case PatronState::IN_QUEUE: {
-            // Stand in queue, decrement patience slowly
+
             p.patience -= dt * 1.0f;
 
-            // Shift forward if queue slots ahead open up
             Vector2D queueSlot(320.0f, 410.0f - p.queueIndex * 52.0f);
             float dx = queueSlot.x - p.position.x;
             float dy = queueSlot.y - p.position.y;
@@ -97,14 +93,14 @@ void PatronManager::updatePatronAI(Patron& p, float dt, const LibraryMap& map) {
         }
 
         case PatronState::WAITING_AT_COUNTER: {
-            // Waiting directly at the service window
+
             p.position = Vector2D(320.0f, 410.0f);
-            p.patience -= dt * 1.5f; // Faster impatience at counter!
+            p.patience -= dt * 1.5f;
             break;
         }
 
         case PatronState::LEAVING_SATISFIED: {
-            // Walk down to entrance and exit happily
+
             float dx = 400.0f - p.position.x;
             float dy = 570.0f - p.position.y;
             float dist = std::sqrt(dx * dx + dy * dy);
@@ -117,7 +113,7 @@ void PatronManager::updatePatronAI(Patron& p, float dt, const LibraryMap& map) {
         }
 
         case PatronState::LEAVING_ANGRY: {
-            // Storm off quickly through entrance
+
             float dx = 400.0f - p.position.x;
             float dy = 570.0f - p.position.y;
             float dist = std::sqrt(dx * dx + dy * dy);
@@ -130,7 +126,7 @@ void PatronManager::updatePatronAI(Patron& p, float dt, const LibraryMap& map) {
         }
 
         case PatronState::BROWSING: {
-            // Idle browsing near reading tables
+
             break;
         }
     }
@@ -141,14 +137,12 @@ void PatronManager::update(float dt, Catalog& catalog, const LibraryMap& map, in
     servedDelta = 0;
     lostDelta = 0;
 
-    // Periodic spawning
     spawnTimer += dt;
     if (spawnTimer >= spawnInterval) {
         spawnTimer = 0.0f;
         spawnNewPatron(catalog);
     }
 
-    // Recompute queue indices for queued patrons
     int qIdx = 0;
     for (auto& p : patrons) {
         if (p.state == PatronState::ENTERING || p.state == PatronState::IN_QUEUE || p.state == PatronState::WAITING_AT_COUNTER) {
@@ -158,11 +152,9 @@ void PatronManager::update(float dt, Catalog& catalog, const LibraryMap& map, in
         }
     }
 
-    // Update each patron
     for (auto it = patrons.begin(); it != patrons.end();) {
         updatePatronAI(*it, dt, map);
 
-        // Check patience expiration
         if ((it->state == PatronState::IN_QUEUE || it->state == PatronState::WAITING_AT_COUNTER) && it->patience <= 0.0f) {
             it->state = PatronState::LEAVING_ANGRY;
             scoreDelta -= 50;
@@ -170,7 +162,6 @@ void PatronManager::update(float dt, Catalog& catalog, const LibraryMap& map, in
             std::cout << "[PATRON DISAPPOINTED]: " << it->name << " left angry. Patience expired for ISBN: " << it->requestedIsbn << "!\n";
         }
 
-        // Remove patrons who walked out the front door
         if ((it->state == PatronState::LEAVING_SATISFIED || it->state == PatronState::LEAVING_ANGRY) && it->position.y >= 565.0f) {
             it = patrons.erase(it);
         } else {
@@ -221,14 +212,12 @@ void PatronManager::render(sf::RenderWindow& window, const sf::Font& font) {
         float px = p.position.x;
         float py = p.position.y;
 
-        // Shadow
         sf::CircleShape shadow(12.f);
         shadow.setScale(sf::Vector2f(1.0f, 0.45f));
         shadow.setFillColor(sf::Color(0, 0, 0, 60));
         shadow.setPosition(sf::Vector2f(px - 12.f, py + 8.f));
         window.draw(shadow);
 
-        // Patron Body
         sf::RectangleShape body(sf::Vector2f(20.f, 24.f));
         body.setFillColor(sf::Color(p.colorR, p.colorG, p.colorB));
         body.setOutlineColor(sf::Color(40, 40, 40));
@@ -236,7 +225,6 @@ void PatronManager::render(sf::RenderWindow& window, const sf::Font& font) {
         body.setPosition(sf::Vector2f(px - 10.f, py - 10.f));
         window.draw(body);
 
-        // Patron Head
         sf::CircleShape head(8.f);
         head.setFillColor(sf::Color(235, 195, 155));
         head.setOutlineColor(sf::Color(140, 100, 70));
@@ -244,13 +232,11 @@ void PatronManager::render(sf::RenderWindow& window, const sf::Font& font) {
         head.setPosition(sf::Vector2f(px - 8.f, py - 23.f));
         window.draw(head);
 
-        // Name tag
         sf::Text nameText(font, p.name, 9);
         nameText.setFillColor(sf::Color::White);
         nameText.setPosition(sf::Vector2f(px - 12.f, py - 32.f));
         window.draw(nameText);
 
-        // Patience Meter (Green -> Yellow -> Red)
         if (p.state == PatronState::IN_QUEUE || p.state == PatronState::WAITING_AT_COUNTER) {
             float barW = 32.f;
             float barH = 4.f;
@@ -270,8 +256,6 @@ void PatronManager::render(sf::RenderWindow& window, const sf::Font& font) {
             else barFill.setFillColor(sf::Color(230, 40, 40));
             window.draw(barFill);
 
-            // Thought Bubble (Dialogue balloon matching proposal screenshot!)
-            // FIND: "Book Title" / ISBN
             sf::RectangleShape bubble(sf::Vector2f(180.f, 42.f));
             bubble.setPosition(sf::Vector2f(px + 16.f, py - 42.f));
             bubble.setFillColor(sf::Color(255, 255, 255, 240));
@@ -279,13 +263,11 @@ void PatronManager::render(sf::RenderWindow& window, const sf::Font& font) {
             bubble.setOutlineThickness(1.5f);
             window.draw(bubble);
 
-            // Red Book Icon in bubble
             sf::RectangleShape bookIcon(sf::Vector2f(10.f, 14.f));
             bookIcon.setPosition(sf::Vector2f(px + 22.f, py - 29.f));
             bookIcon.setFillColor(sf::Color(200, 30, 30));
             window.draw(bookIcon);
 
-            // Abbreviated Title
             std::string shortTitle = p.requestedTitle;
             if (shortTitle.size() > 20) shortTitle = shortTitle.substr(0, 18) + "..";
             std::string reqMsg = "FIND: \"" + shortTitle + "\"\nISBN: " + std::to_string(p.requestedIsbn);
