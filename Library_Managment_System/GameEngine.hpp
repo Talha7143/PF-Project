@@ -12,10 +12,6 @@
 #include "CatalogTerminalUI.hpp"
 #include "BinaryFileManager.hpp"
 
-// ============================================================================
-// GameEngine: Multi-State Machine & Core Simulation Orchestrator
-// Coordinates MainMenu, Gameplay, CatalogUI, Pause, GameOver, and Leaderboards
-// ============================================================================
 
 class GameEngine {
 private:
