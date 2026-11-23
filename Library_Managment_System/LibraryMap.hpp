@@ -2,6 +2,8 @@
 
 #include <SFML/Graphics.hpp>
 #include "Structs.hpp"
+
+class Catalog;
 #include <vector>
 
 
@@ -16,7 +18,7 @@ public:
     LibraryMap();
 
     void initialize();
-    void render(sf::RenderWindow& window, const sf::Font& font, int highlightedShelfId = 0);
+    void render(sf::RenderWindow& window, const sf::Font& font, const Catalog& catalog, int highlightedShelfId = 0);
 
     // Spatial queries & interaction detection
     bool checkCollision(const sf::FloatRect& entityBounds) const;
