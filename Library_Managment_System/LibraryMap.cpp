@@ -1,4 +1,5 @@
 #include "LibraryMap.hpp"
+#include "Catalog.hpp"
 #include <cmath>
 #include <cstring>
 
@@ -117,7 +118,7 @@ sf::Vector2f LibraryMap::getCounterQueueStart() const {
     return sf::Vector2f(320.0f, 410.0f);
 }
 
-void LibraryMap::render(sf::RenderWindow& window, const sf::Font& font, int highlightedShelfId) {
+void LibraryMap::render(sf::RenderWindow& window, const sf::Font& font, const Catalog& catalog, int highlightedShelfId) {
     // 1. Draw Parquet Wooden Floor Pattern
     const float tileSize = 40.0f;
     for (float x = 0; x < 800.f; x += tileSize) {
@@ -202,6 +203,45 @@ void LibraryMap::render(sf::RenderWindow& window, const sf::Font& font, int high
         signText.setStyle(sf::Text::Bold);
         signText.setPosition(sf::Vector2f(s.x + 12.f, s.y - 17.f));
         window.draw(signText);
+
+        // Show real catalog titles beneath each shelf.
+        sf::RectangleShape titlePlate(sf::Vector2f(s.width, 48.f));
+        titlePlate.setPosition(sf::Vector2f(s.x, s.y + s.height + 5.f));
+        titlePlate.setFillColor(sf::Color(25, 30, 38, 235));
+        titlePlate.setOutlineColor(sf::Color(190, 160, 95));
+        titlePlate.setOutlineThickness(1.f);
+        window.draw(titlePlate);
+
+        sf::Text booksHeading(font, "BOOK TITLES", 8);
+        booksHeading.setFillColor(sf::Color(255, 220, 130));
+        booksHeading.setStyle(sf::Text::Bold);
+        booksHeading.setPosition(sf::Vector2f(s.x + 5.f, s.y + s.height + 7.f));
+        window.draw(booksHeading);
+
+        int shown = 0;
+        int totalOnShelf = 0;
+        for (const auto& book : catalog.getBooks()) {
+            if (book.shelfId != s.id) continue;
+            ++totalOnShelf;
+            if (shown >= 3) continue;
+
+            std::string bookTitle = book.title;
+            const std::size_t maxChars = 23;
+            if (bookTitle.size() > maxChars) bookTitle = bookTitle.substr(0, maxChars - 3) + "...";
+
+            sf::Text titleLine(font, bookTitle, 7);
+            titleLine.setFillColor(sf::Color::White);
+            titleLine.setPosition(sf::Vector2f(s.x + 5.f, s.y + s.height + 17.f + shown * 9.f));
+            window.draw(titleLine);
+            ++shown;
+        }
+
+        if (totalOnShelf > 3) {
+            sf::Text moreLine(font, "+" + std::to_string(totalOnShelf - 3) + " more - TAB", 7);
+            moreLine.setFillColor(sf::Color(150, 220, 255));
+            moreLine.setPosition(sf::Vector2f(s.x + 5.f, s.y + s.height + 43.f));
+            window.draw(moreLine);
+        }
 
         if (s.id == highlightedShelfId) {
             sf::Text foundText(font, "SEARCH RESULT - GO HERE", 10);
