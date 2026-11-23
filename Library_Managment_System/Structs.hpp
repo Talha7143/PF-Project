@@ -4,10 +4,6 @@
 #include <vector>
 #include <cstdint>
 
-// ============================================================================
-// Bibliotheca Quest: Core Struct-Based Architecture
-// Designed for High-Performance Memory Alignment, Binary Serialization & 2D Game Logic
-// ============================================================================
 
 // 2D Vector representation for position, velocity, and spatial coordinates
 struct Vector2D {
