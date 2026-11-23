@@ -12,7 +12,6 @@
 #include "CatalogTerminalUI.hpp"
 #include "BinaryFileManager.hpp"
 
-
 class GameEngine {
 private:
     sf::RenderWindow window;
@@ -21,27 +20,22 @@ private:
 
     GameState currentState{ GameState::MainMenuState };
 
-    // Core Engine Subsystems
     Catalog catalog;
     LibraryMap map;
     PlayerEntity player;
     PatronManager patronMgr;
     CatalogTerminalUI terminalUI;
 
-    // Leaderboard & Logs
     std::vector<HighScoreRecord> highScores;
     std::string notificationMsg{ "" };
     float notificationTimer{ 0.0f };
 
-    // Main Menu State Variables
     int selectedMenuIndex{ 0 };
     std::vector<std::string> menuOptions{ "START SIMULATION", "LOAD SAVED GAME", "LEADERBOARD", "HOW TO PLAY", "EXIT" };
 
-    // Pause Menu State Variables
     int selectedPauseIndex{ 0 };
     std::vector<std::string> pauseOptions{ "RESUME", "SAVE GAME (savegame.bin)", "CATALOG TERMINAL", "MAIN MENU" };
 
-    // Helper functions
     void handleMainMenuInput(const sf::Event& event);
     void handleGameplayInput(const sf::Event& event);
     void handlePauseInput(const sf::Event& event);
