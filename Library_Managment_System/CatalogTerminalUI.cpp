@@ -24,7 +24,7 @@ void CatalogTerminalUI::executeBinarySearch(Catalog& catalog) {
         std::cout << "Search Status: MATCH FOUND (Executed in O(log N) operations)\n";
         std::cout << "Title   : " << lastResult.matchedBook.title << "\n";
         std::cout << "Author  : " << lastResult.matchedBook.author << "\n";
-        std::cout << "Location: " << lastResult.matchedBook.location 
+        std::cout << "Location: " << lastResult.matchedBook.location
                   << " [Grid: X=" << lastResult.matchedBook.gridX << ", Y=" << lastResult.matchedBook.gridY << "]\n";
         std::cout << "In Stock: " << lastResult.matchedBook.copies << " Copies\n\n";
     } else {
@@ -42,7 +42,7 @@ void CatalogTerminalUI::executeLinearSearch(Catalog& catalog) {
         std::cout << "Search Status: MATCH FOUND (Executed in O(N) operations)\n";
         std::cout << "Title   : " << lastResult.matchedBook.title << "\n";
         std::cout << "Author  : " << lastResult.matchedBook.author << "\n";
-        std::cout << "Location: " << lastResult.matchedBook.location 
+        std::cout << "Location: " << lastResult.matchedBook.location
                   << " [Grid: X=" << lastResult.matchedBook.gridX << ", Y=" << lastResult.matchedBook.gridY << "]\n";
         std::cout << "In Stock: " << lastResult.matchedBook.copies << " Copies\n\n";
     } else {
@@ -53,7 +53,6 @@ void CatalogTerminalUI::executeLinearSearch(Catalog& catalog) {
 void CatalogTerminalUI::handleEvent(const sf::Event& event, Catalog& catalog) {
     if (!isOpen) return;
 
-    // Mouse Clicks
     if (const auto* mousePress = event.getIf<sf::Event::MouseButtonPressed>()) {
         if (mousePress->button == sf::Mouse::Button::Left) {
             sf::Vector2f clickPos(static_cast<float>(mousePress->position.x), static_cast<float>(mousePress->position.y));
@@ -77,18 +76,17 @@ void CatalogTerminalUI::handleEvent(const sf::Event& event, Catalog& catalog) {
         }
     }
 
-    // Text typing input
     if (const auto* textEntered = event.getIf<sf::Event::TextEntered>()) {
         char32_t unicode = textEntered->unicode;
 
-        if (unicode == 8) { // Backspace
+        if (unicode == 8) {
             if (activeInputBox == 0 && !isbnInput.empty()) {
                 isbnInput.pop_back();
             } else if (activeInputBox == 1 && !titleInput.empty()) {
                 titleInput.pop_back();
             }
         }
-        else if (unicode == 13) { // Enter key
+        else if (unicode == 13) {
             if (activeInputBox == 0) executeBinarySearch(catalog);
             else executeLinearSearch(catalog);
         }
@@ -104,7 +102,6 @@ void CatalogTerminalUI::handleEvent(const sf::Event& event, Catalog& catalog) {
         }
     }
 
-    // Keyboard Shortcuts
     if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>()) {
         if (keyPressed->scancode == sf::Keyboard::Scan::Escape) {
             close();
@@ -115,7 +112,6 @@ void CatalogTerminalUI::handleEvent(const sf::Event& event, Catalog& catalog) {
 void CatalogTerminalUI::render(sf::RenderWindow& window, const sf::Font& font) {
     if (!isOpen) return;
 
-    // Main Modal Box
     sf::RectangleShape modal(sf::Vector2f(modalBounds.size.x, modalBounds.size.y));
     modal.setPosition(modalBounds.position);
     modal.setFillColor(sf::Color(230, 235, 245, 245));
@@ -123,7 +119,6 @@ void CatalogTerminalUI::render(sf::RenderWindow& window, const sf::Font& font) {
     modal.setOutlineThickness(3.f);
     window.draw(modal);
 
-    // Modal Header Bar
     sf::RectangleShape header(sf::Vector2f(modalBounds.size.x, 28.f));
     header.setPosition(modalBounds.position);
     header.setFillColor(sf::Color(50, 85, 140));
@@ -135,7 +130,6 @@ void CatalogTerminalUI::render(sf::RenderWindow& window, const sf::Font& font) {
     titleText.setPosition(sf::Vector2f(modalBounds.position.x + 12.f, modalBounds.position.y + 6.f));
     window.draw(titleText);
 
-    // Close button [X]
     sf::RectangleShape closeBtn(sf::Vector2f(closeBtnBounds.size.x, closeBtnBounds.size.y));
     closeBtn.setPosition(closeBtnBounds.position);
     closeBtn.setFillColor(sf::Color(190, 50, 50));
@@ -147,7 +141,6 @@ void CatalogTerminalUI::render(sf::RenderWindow& window, const sf::Font& font) {
     xText.setPosition(sf::Vector2f(closeBtnBounds.position.x + 6.f, closeBtnBounds.position.y + 3.f));
     window.draw(xText);
 
-    // Input labels
     sf::Text isbnLabel(font, "ISBN:", 11);
     isbnLabel.setFillColor(sf::Color(30, 30, 30));
     isbnLabel.setStyle(sf::Text::Bold);
@@ -160,7 +153,6 @@ void CatalogTerminalUI::render(sf::RenderWindow& window, const sf::Font& font) {
     titleLabel.setPosition(sf::Vector2f(modalBounds.position.x + 12.f, titleBoxBounds.position.y + 3.f));
     window.draw(titleLabel);
 
-    // ISBN Input Box
     sf::RectangleShape isbnBox(sf::Vector2f(isbnBoxBounds.size.x, isbnBoxBounds.size.y));
     isbnBox.setPosition(isbnBoxBounds.position);
     isbnBox.setFillColor(sf::Color::White);
@@ -173,7 +165,6 @@ void CatalogTerminalUI::render(sf::RenderWindow& window, const sf::Font& font) {
     isbnVal.setPosition(sf::Vector2f(isbnBoxBounds.position.x + 6.f, isbnBoxBounds.position.y + 3.f));
     window.draw(isbnVal);
 
-    // Title Input Box
     sf::RectangleShape titleBox(sf::Vector2f(titleBoxBounds.size.x, titleBoxBounds.size.y));
     titleBox.setPosition(titleBoxBounds.position);
     titleBox.setFillColor(sf::Color::White);
@@ -186,7 +177,6 @@ void CatalogTerminalUI::render(sf::RenderWindow& window, const sf::Font& font) {
     titleVal.setPosition(sf::Vector2f(titleBoxBounds.position.x + 6.f, titleBoxBounds.position.y + 3.f));
     window.draw(titleVal);
 
-    // Buttons
     sf::RectangleShape binBtn(sf::Vector2f(binaryBtnBounds.size.x, binaryBtnBounds.size.y));
     binBtn.setPosition(binaryBtnBounds.position);
     binBtn.setFillColor(sf::Color(70, 120, 180));
@@ -213,7 +203,6 @@ void CatalogTerminalUI::render(sf::RenderWindow& window, const sf::Font& font) {
     linText.setPosition(sf::Vector2f(linearBtnBounds.position.x + 12.f, linearBtnBounds.position.y + 6.f));
     window.draw(linText);
 
-    // Results Box
     sf::RectangleShape resBox(sf::Vector2f(modalBounds.size.x - 24.f, 90.f));
     resBox.setPosition(sf::Vector2f(modalBounds.position.x + 12.f, 362.f));
     resBox.setFillColor(sf::Color(25, 30, 40));
@@ -223,10 +212,10 @@ void CatalogTerminalUI::render(sf::RenderWindow& window, const sf::Font& font) {
 
     if (hasSearched) {
         if (lastResult.found) {
-            std::string statusLine = "STATUS: MATCH FOUND (O(" + 
-                std::string(lastResult.searchType == SearchType::BINARY_ISBN ? "log N" : "N") + 
+            std::string statusLine = "STATUS: MATCH FOUND (O(" +
+                std::string(lastResult.searchType == SearchType::BINARY_ISBN ? "log N" : "N") +
                 ") - " + std::to_string(lastResult.operationsCount) + " ops)";
-            
+
             sf::Text stText(font, statusLine, 9);
             stText.setFillColor(sf::Color(80, 240, 120));
             stText.setPosition(sf::Vector2f(modalBounds.position.x + 18.f, 368.f));
@@ -239,7 +228,7 @@ void CatalogTerminalUI::render(sf::RenderWindow& window, const sf::Font& font) {
             bTitle.setPosition(sf::Vector2f(modalBounds.position.x + 18.f, 384.f));
             window.draw(bTitle);
 
-            sf::Text bLoc(font, "Loc: " + std::string(lastResult.matchedBook.location) + 
+            sf::Text bLoc(font, "Loc: " + std::string(lastResult.matchedBook.location) +
                                 " [Shelf #" + std::to_string(lastResult.matchedBook.shelfId) + "]", 9);
             bLoc.setFillColor(sf::Color(240, 200, 80));
             bLoc.setPosition(sf::Vector2f(modalBounds.position.x + 18.f, 400.f));
