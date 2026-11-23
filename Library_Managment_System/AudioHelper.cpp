@@ -10,7 +10,7 @@ void AudioHelper::init() {
 void AudioHelper::playSound(SoundEffect effect) {
     if (!soundEnabled) return;
 
-    // Graceful console auditory feedback for SFML Audio
+    
     switch (effect) {
         case SoundEffect::BOOK_PICKUP:
             std::cout << "[AUDIO FX]: *Rustle* Book retrieved from shelf.\n";
