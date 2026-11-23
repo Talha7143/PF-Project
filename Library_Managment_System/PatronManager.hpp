@@ -6,7 +6,6 @@
 #include "LibraryMap.hpp"
 #include <vector>
 
-
 class PatronManager {
 private:
     std::vector<Patron> patrons;
@@ -24,11 +23,9 @@ public:
     void update(float dt, Catalog& catalog, const LibraryMap& map, int& scoreDelta, int& servedDelta, int& lostDelta);
     void render(sf::RenderWindow& window, const sf::Font& font);
 
-    // Interaction with Librarian at checkout counter
     Patron* getHeadOfQueue();
     bool serveHeadPatron(int carriedIsbn, Catalog& catalog, std::string& feedbackMsg);
 
-    // Queue accessors
     int getWaitingPatronCount() const;
     const std::vector<Patron>& getPatrons() const { return patrons; }
     std::vector<Patron>& getPatrons() { return patrons; }
