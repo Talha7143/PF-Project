@@ -2,11 +2,6 @@
 #include <iostream>
 #include <cassert>
 
-// ============================================================================
-// Unit Test: Binary File Serialization & Deserialization
-// Tests saving & loading catalog.dat and savegame.bin structs
-// ============================================================================
-
 void testCatalogSaveAndLoad() {
     std::vector<Book> original;
     original.emplace_back(9001, "Test Book One", "Test Author", "Academic", "Shelf A1", 1, 10, 4, 3);
