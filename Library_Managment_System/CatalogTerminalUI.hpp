@@ -34,6 +34,9 @@ public:
     void open() { isOpen = true; }
     void close() { isOpen = false; }
     bool isVisible() const { return isOpen; }
+    int getHighlightedShelfId() const {
+        return (hasSearched && lastResult.found) ? lastResult.matchedBook.shelfId : 0;
+    }
 
     void handleEvent(const sf::Event& event, Catalog& catalog);
     void executeBinarySearch(Catalog& catalog);

@@ -220,6 +220,7 @@ void GameEngine::handleGameplayInput(const sf::Event& event) {
                 if (player.isCarrying()) {
                     std::string feedback;
                     if (patronMgr.serveHeadPatron(player.getCarriedISBN(), catalog, feedback)) {
+                        const int issuedIsbn = player.getCarriedISBN();
                         player.dropOrIssueBook();
                         player.addScore(150);
                         player.incrementServed();
@@ -227,12 +228,13 @@ void GameEngine::handleGameplayInput(const sf::Event& event) {
 
                         TransactionRecord tx;
                         tx.id = rand() % 9000 + 1000;
-                        tx.isbn = player.getCarriedISBN();
+                        tx.isbn = issuedIsbn;
                         strncpy_s(tx.action, "LOAN_ISSUED", sizeof(tx.action));
                         tx.scoreDelta = 150;
                         BinaryFileManager::logTransaction(tx);
                     } else {
-                        showNotification(feedback);
+                        player.addScore(-25);
+                        showNotification(feedback + " (-25 points)", 4.0f);
                     }
                 } else {
                     showNotification("You are not carrying any book to issue!");
@@ -248,7 +250,8 @@ void GameEngine::handleGameplayInput(const sf::Event& event) {
                     const auto& b = shelfBooks[0];
                     if (player.pickUpBook(b.isbn, b.title, shelfId)) {
                         catalog.borrowBook(b.isbn);
-                        showNotification("Retrieved: '" + std::string(b.title) + "' from Shelf #" + std::to_string(shelfId));
+                        showNotification("COLLECTED: '" + std::string(b.title) + "' (ISBN " +
+                                         std::to_string(b.isbn) + ")", 4.0f);
                     } else {
                         showNotification("Inventory full! Librarian can only hold " + std::to_string(player.getData().booksCapacity) + " books.");
                     }
@@ -381,7 +384,7 @@ void GameEngine::renderMainMenu() {
 
 void GameEngine::renderGameplay() {
     // 1. Draw Map & Furniture
-    map.render(window, font);
+    map.render(window, font, terminalUI.getHighlightedShelfId());
 
     // 2. Draw AI Patrons
     patronMgr.render(window, font);
@@ -425,17 +428,17 @@ void GameEngine::renderGameplay() {
     }
 
     if (!promptStr.empty()) {
-        sf::RectangleShape promptBox(sf::Vector2f(320.f, 26.f));
-        promptBox.setPosition(sf::Vector2f(240.f, 520.f));
+        sf::RectangleShape promptBox(sf::Vector2f(420.f, 34.f));
+        promptBox.setPosition(sf::Vector2f(190.f, 510.f));
         promptBox.setFillColor(sf::Color(20, 20, 20, 210));
         promptBox.setOutlineColor(sf::Color(240, 210, 70));
         promptBox.setOutlineThickness(1.5f);
         window.draw(promptBox);
 
-        sf::Text pText(font, promptStr, 11);
+        sf::Text pText(font, promptStr, 14);
         pText.setFillColor(sf::Color::Yellow);
         pText.setStyle(sf::Text::Bold);
-        pText.setPosition(sf::Vector2f(250.f, 524.f));
+        pText.setPosition(sf::Vector2f(205.f, 517.f));
         window.draw(pText);
     }
 

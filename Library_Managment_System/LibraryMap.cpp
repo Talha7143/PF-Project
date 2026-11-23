@@ -117,7 +117,7 @@ sf::Vector2f LibraryMap::getCounterQueueStart() const {
     return sf::Vector2f(320.0f, 410.0f);
 }
 
-void LibraryMap::render(sf::RenderWindow& window, const sf::Font& font) {
+void LibraryMap::render(sf::RenderWindow& window, const sf::Font& font, int highlightedShelfId) {
     // 1. Draw Parquet Wooden Floor Pattern
     const float tileSize = 40.0f;
     for (float x = 0; x < 800.f; x += tileSize) {
@@ -152,6 +152,16 @@ void LibraryMap::render(sf::RenderWindow& window, const sf::Font& font) {
         shelfBody.setOutlineColor(sf::Color(50, 25, 10));
         shelfBody.setOutlineThickness(3.f);
         window.draw(shelfBody);
+
+        // A catalog match keeps its shelf easy to find after the terminal closes.
+        if (s.id == highlightedShelfId) {
+            sf::RectangleShape highlight(sf::Vector2f(s.width + 10.f, s.height + 30.f));
+            highlight.setPosition(sf::Vector2f(s.x - 5.f, s.y - 23.f));
+            highlight.setFillColor(sf::Color::Transparent);
+            highlight.setOutlineColor(sf::Color::Yellow);
+            highlight.setOutlineThickness(4.f);
+            window.draw(highlight);
+        }
 
         // Bookshelf Rows (Simulating 3 shelves with colorful book spines)
         for (int row = 0; row < 3; ++row) {
@@ -192,6 +202,14 @@ void LibraryMap::render(sf::RenderWindow& window, const sf::Font& font) {
         signText.setStyle(sf::Text::Bold);
         signText.setPosition(sf::Vector2f(s.x + 12.f, s.y - 17.f));
         window.draw(signText);
+
+        if (s.id == highlightedShelfId) {
+            sf::Text foundText(font, "SEARCH RESULT - GO HERE", 10);
+            foundText.setFillColor(sf::Color::Yellow);
+            foundText.setStyle(sf::Text::Bold);
+            foundText.setPosition(sf::Vector2f(s.x, s.y + s.height + 5.f));
+            window.draw(foundText);
+        }
     }
 
     // 4. Reading Study Desks with Lamps
