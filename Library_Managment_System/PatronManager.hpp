@@ -6,10 +6,6 @@
 #include "LibraryMap.hpp"
 #include <vector>
 
-// ============================================================================
-// PatronManager: AI NPC Simulation, Queue Pathfinding & Patience State Machine
-// Manages real-time queueing, book request bubbles, and patience timers
-// ============================================================================
 
 class PatronManager {
 private:
