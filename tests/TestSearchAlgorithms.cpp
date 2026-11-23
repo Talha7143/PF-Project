@@ -2,17 +2,12 @@
 #include <iostream>
 #include <cassert>
 
-// ============================================================================
-// Unit Test: Search Algorithm Verification
-// Tests Binary Search O(log N) and Linear Search O(N) edge cases & correctness
-// ============================================================================
-
 void testBinarySearchValid() {
     Catalog catalog;
     SearchResult res = catalog.searchByISBN(1004);
     assert(res.found == true);
     assert(res.matchedBook.isbn == 1004);
-    assert(res.operationsCount <= 7); // ceil(log2(100)) is 7
+    assert(res.operationsCount <= 7);
     std::cout << "[PASS]: testBinarySearchValid (Executed in " << res.operationsCount << " ops)\n";
 }
 
