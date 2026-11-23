@@ -4,10 +4,6 @@
 #include "Structs.hpp"
 #include "LibraryMap.hpp"
 
-// ============================================================================
-// Player: Head Librarian Entity Controller
-// Handles 4-directional movement, collision boundary testing, and book holding
-// ============================================================================
 
 class PlayerEntity {
 private:
