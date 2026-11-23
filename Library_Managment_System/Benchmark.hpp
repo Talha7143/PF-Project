@@ -5,10 +5,10 @@
 #include <vector>
 #include <string>
 
-// ============================================================================
-// Benchmark: High-Precision Performance Stopwatch for Search Algorithms
-// Measures exact CPU microsecond timings comparing O(log N) vs O(N)
-// ============================================================================
+
+
+
+
 
 struct BenchmarkResult {
     std::string algorithmName;
