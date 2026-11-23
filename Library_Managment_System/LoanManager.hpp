@@ -17,7 +17,6 @@ bool LoanManager::issueLoan(int patronId, const char* patronName, int isbn, Cata
         return false;
     }
 
-    // Deduct stock from catalog
     book->copies--;
 
     ActiveLoan loan;
@@ -27,7 +26,7 @@ bool LoanManager::issueLoan(int patronId, const char* patronName, int isbn, Cata
     loan.isbn = isbn;
     strncpy_s(loan.bookTitle, book->title, sizeof(loan.bookTitle));
     loan.issueDay = currentDay;
-    loan.dueDay = currentDay + 3; // 3-day loan duration
+    loan.dueDay = currentDay + 3;
     loan.isReturned = false;
     loan.fineAmount = 0.0f;
 
@@ -46,13 +45,11 @@ bool LoanManager::returnLoan(int isbn, Catalog& catalog, int currentDay, float& 
         if (!loan.isReturned && loan.isbn == isbn) {
             loan.isReturned = true;
 
-            // Restock catalog copy
             Book* book = catalog.findBookByISBN(isbn);
             if (book) {
                 book->copies++;
             }
 
-            // Calculate overdue penalty: $2.50 per day overdue
             if (currentDay > loan.dueDay) {
                 int overdueDays = currentDay - loan.dueDay;
                 loan.fineAmount = overdueDays * 2.50f;
@@ -69,7 +66,6 @@ bool LoanManager::returnLoan(int isbn, Catalog& catalog, int currentDay, float& 
         }
     }
 
-    // If no existing loan matched, accept it as general re-shelved return
     Book* book = catalog.findBookByISBN(isbn);
     if (book) {
         book->copies++;
