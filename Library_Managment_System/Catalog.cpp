@@ -11,7 +11,6 @@ Catalog::Catalog() {
 void Catalog::initializeDefaultCatalog() {
     books.clear();
 
-    // Default 100 books covering Academic, Fiction, and Sci-Fi categories
     struct DefaultEntry {
         int isbn;
         const char* title;
@@ -25,7 +24,7 @@ void Catalog::initializeDefaultCatalog() {
     };
 
     DefaultEntry initialEntries[] = {
-        // Shelf A1 - Fiction Classic
+
         { 1001, "Introduction to Algorithms", "Cormen, Leiserson, Rivest", "Academic", "Shelf C1", 3, 35, 4, 4 },
         { 1002, "Object-Oriented Programming in C++", "Bjarne Stroustrup", "Academic", "Shelf C1", 3, 35, 4, 3 },
         { 1003, "Database System Concepts", "Silberschatz, Korth, Sudarshan", "Academic", "Shelf C1", 3, 35, 4, 5 },
@@ -35,7 +34,6 @@ void Catalog::initializeDefaultCatalog() {
         { 1007, "Clean Code: A Handbook of Agile Craft", "Robert C. Martin", "Academic", "Shelf C1", 3, 35, 4, 6 },
         { 1008, "Design Patterns: Elements of Reusable Code", "Erich Gamma et al.", "Academic", "Shelf C1", 3, 35, 4, 2 },
 
-        // Shelf A2 - Academic & Systems
         { 1009, "Computer Networks", "Andrew S. Tanenbaum", "Academic", "Shelf C1", 3, 35, 4, 4 },
         { 1010, "Modern Operating Systems", "Andrew S. Tanenbaum", "Academic", "Shelf C1", 3, 35, 4, 4 },
         { 1011, "Structure and Interpretation of Computer Programs", "Harold Abelson", "Academic", "Shelf C1", 3, 35, 4, 2 },
@@ -44,7 +42,6 @@ void Catalog::initializeDefaultCatalog() {
         { 1014, "The Art of Computer Programming", "Donald E. Knuth", "Academic", "Shelf C1", 3, 35, 4, 2 },
         { 1015, "Discrete Mathematics and Its Applications", "Kenneth H. Rosen", "Academic", "Shelf C1", 3, 35, 4, 6 },
 
-        // Shelf B1 - Sci-Fi Masterpieces
         { 2001, "Dune", "Frank Herbert", "Sci-Fi", "Shelf B1", 2, 22, 4, 7 },
         { 2002, "Neuromancer", "William Gibson", "Sci-Fi", "Shelf B1", 2, 22, 4, 4 },
         { 2003, "Foundation", "Isaac Asimov", "Sci-Fi", "Shelf B1", 2, 22, 4, 5 },
@@ -54,7 +51,6 @@ void Catalog::initializeDefaultCatalog() {
         { 2007, "Hyperion", "Dan Simmons", "Sci-Fi", "Shelf B1", 2, 22, 4, 3 },
         { 2008, "The Left Hand of Darkness", "Ursula K. Le Guin", "Sci-Fi", "Shelf B1", 2, 22, 4, 2 },
 
-        // Shelf B2 - Sci-Fi & Speculative
         { 2009, "Ender's Game", "Orson Scott Card", "Sci-Fi", "Shelf B1", 2, 22, 4, 6 },
         { 2010, "The Hitchhiker's Guide to the Galaxy", "Douglas Adams", "Sci-Fi", "Shelf B1", 2, 22, 4, 8 },
         { 2011, "Fahrenheit 451", "Ray Bradbury", "Sci-Fi", "Shelf B1", 2, 22, 4, 5 },
@@ -62,7 +58,6 @@ void Catalog::initializeDefaultCatalog() {
         { 2013, "Solaris", "Stanislaw Lem", "Sci-Fi", "Shelf B1", 2, 22, 4, 3 },
         { 2014, "The Three-Body Problem", "Cixin Liu", "Sci-Fi", "Shelf B1", 2, 22, 4, 5 },
 
-        // Shelf C1 - Fiction Literature
         { 3001, "To Kill a Mockingbird", "Harper Lee", "Fiction", "Shelf A1", 1, 10, 4, 6 },
         { 3002, "1984", "George Orwell", "Fiction", "Shelf A1", 1, 10, 4, 9 },
         { 3003, "The Great Gatsby", "F. Scott Fitzgerald", "Fiction", "Shelf A1", 1, 10, 4, 5 },
@@ -79,7 +74,6 @@ void Catalog::initializeDefaultCatalog() {
         books.emplace_back(e.isbn, e.title, e.author, e.category, e.location, e.shelfId, e.gx, e.gy, e.copies);
     }
 
-    // Expand catalog to 100 entries for large-scale benchmarks as requested
     int currentId = 3009;
     const char* genreList[] = { "Fiction", "Sci-Fi", "Academic", "Quiet Archive" };
     while (books.size() < 100) {
@@ -120,7 +114,6 @@ void Catalog::setBooks(const std::vector<Book>& loadedBooks) {
     if (!loadedBooks.empty()) {
         books = loadedBooks;
 
-        // Migrate older saved catalogs to the four visible in-game shelf IDs.
         for (auto& book : books) {
             const std::string category = book.category;
             if (category == "Fiction") {
@@ -173,7 +166,7 @@ int Catalog::partitionISBN(int low, int high) {
 }
 
 void Catalog::sortByTitle() {
-    // Insertion sort by title for demonstration of O(N^2) sorting in PF
+
     int n = static_cast<int>(books.size());
     for (int i = 1; i < n; ++i) {
         Book key = books[i];
@@ -200,7 +193,6 @@ SearchResult Catalog::searchByISBN(int targetISBN) {
     int left = 0;
     int right = static_cast<int>(books.size()) - 1;
 
-    // Classic Binary Search O(log N)
     while (left <= right) {
         result.operationsCount++;
         int mid = left + (right - left) / 2;
@@ -245,7 +237,6 @@ SearchResult Catalog::searchByTitleOrAuthor(const std::string& query) {
     result.operationsCount = 0;
     result.matchCount = 0;
 
-    // Linear Search O(N) over all items
     for (size_t i = 0; i < books.size(); ++i) {
         result.operationsCount++;
         std::string titleStr = books[i].title;
@@ -254,7 +245,7 @@ SearchResult Catalog::searchByTitleOrAuthor(const std::string& query) {
         if (caseInsensitiveSubstr(titleStr, query) || caseInsensitiveSubstr(authorStr, query)) {
             if (!result.found) {
                 result.found = true;
-                result.matchedBook = books[i]; // Store primary match
+                result.matchedBook = books[i];
             }
             if (result.matchCount < 32) {
                 result.matchedIndices[result.matchCount++] = static_cast<int>(i);
