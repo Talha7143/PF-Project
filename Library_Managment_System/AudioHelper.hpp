@@ -3,10 +3,10 @@
 #include <SFML/Audio.hpp>
 #include <string>
 
-// ============================================================================
-// AudioHelper: Sound Effect System & Procedural Audio Trigger
-// Handles loan stamps, pickup sounds, error chimes, and theme audio
-// ============================================================================
+
+
+
+
 
 enum class SoundEffect {
     BOOK_PICKUP,
