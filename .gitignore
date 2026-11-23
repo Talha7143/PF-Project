@@ -1,4 +1,3 @@
-# .gitignore for Visual Studio and SFML C++ Projects
 .vs/
 x64/
 Debug/
