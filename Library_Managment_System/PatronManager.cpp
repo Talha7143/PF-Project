@@ -57,7 +57,7 @@ void PatronManager::updatePatronAI(Patron& p, float dt, const LibraryMap& map) {
     switch (p.state) {
         case PatronState::ENTERING: {
             // Walk up from entrance towards the counter waiting line
-            Vector2D queueSlot(320.0f, 410.0f - p.queueIndex * 42.0f);
+            Vector2D queueSlot(320.0f, 410.0f - p.queueIndex * 52.0f);
             if (p.queueIndex < 0) queueSlot = Vector2D(320.0f, 410.0f);
 
             float dx = queueSlot.x - p.position.x;
@@ -79,7 +79,7 @@ void PatronManager::updatePatronAI(Patron& p, float dt, const LibraryMap& map) {
             p.patience -= dt * 1.0f;
 
             // Shift forward if queue slots ahead open up
-            Vector2D queueSlot(320.0f, 410.0f - p.queueIndex * 42.0f);
+            Vector2D queueSlot(320.0f, 410.0f - p.queueIndex * 52.0f);
             float dx = queueSlot.x - p.position.x;
             float dy = queueSlot.y - p.position.y;
             float dist = std::sqrt(dx * dx + dy * dy);
@@ -272,8 +272,8 @@ void PatronManager::render(sf::RenderWindow& window, const sf::Font& font) {
 
             // Thought Bubble (Dialogue balloon matching proposal screenshot!)
             // FIND: "Book Title" / ISBN
-            sf::RectangleShape bubble(sf::Vector2f(130.f, 32.f));
-            bubble.setPosition(sf::Vector2f(px + 14.f, py - 36.f));
+            sf::RectangleShape bubble(sf::Vector2f(180.f, 42.f));
+            bubble.setPosition(sf::Vector2f(px + 16.f, py - 42.f));
             bubble.setFillColor(sf::Color(255, 255, 255, 240));
             bubble.setOutlineColor(sf::Color(30, 30, 30));
             bubble.setOutlineThickness(1.5f);
@@ -281,18 +281,18 @@ void PatronManager::render(sf::RenderWindow& window, const sf::Font& font) {
 
             // Red Book Icon in bubble
             sf::RectangleShape bookIcon(sf::Vector2f(10.f, 14.f));
-            bookIcon.setPosition(sf::Vector2f(px + 18.f, py - 28.f));
+            bookIcon.setPosition(sf::Vector2f(px + 22.f, py - 29.f));
             bookIcon.setFillColor(sf::Color(200, 30, 30));
             window.draw(bookIcon);
 
             // Abbreviated Title
             std::string shortTitle = p.requestedTitle;
-            if (shortTitle.size() > 14) shortTitle = shortTitle.substr(0, 12) + "..";
-            std::string reqMsg = "FIND: \"" + shortTitle + "\"\n/" + std::to_string(p.requestedIsbn);
-            sf::Text bubbleText(font, reqMsg, 9);
+            if (shortTitle.size() > 20) shortTitle = shortTitle.substr(0, 18) + "..";
+            std::string reqMsg = "FIND: \"" + shortTitle + "\"\nISBN: " + std::to_string(p.requestedIsbn);
+            sf::Text bubbleText(font, reqMsg, 11);
             bubbleText.setFillColor(sf::Color(20, 20, 20));
             bubbleText.setStyle(sf::Text::Bold);
-            bubbleText.setPosition(sf::Vector2f(px + 32.f, py - 34.f));
+            bubbleText.setPosition(sf::Vector2f(px + 38.f, py - 39.f));
             window.draw(bubbleText);
         }
     }

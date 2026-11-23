@@ -11,7 +11,7 @@ namespace Config {
     constexpr const char* WINDOW_TITLE = "Bibliotheca Quest: The Ultimate Library Simulation";
 
     // Librarian Movement & Physics
-    constexpr float PLAYER_DEFAULT_SPEED = 4.5f;
+    constexpr float PLAYER_DEFAULT_SPEED = 5.5f;
     constexpr float PLAYER_SPRINT_MULTIPLIER = 1.4f;
     constexpr int PLAYER_BASE_CAPACITY = 5;
 
