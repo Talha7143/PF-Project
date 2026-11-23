@@ -2,10 +2,6 @@
 
 #include <cstdint>
 
-// ============================================================================
-// Bibliotheca Quest: Global Configuration Constants & Game Parameters
-// Defines engine settings, gameplay timings, and scoring balance constants
-// ============================================================================
 
 namespace Config {
     // Window Settings
