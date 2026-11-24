@@ -28,7 +28,8 @@ void PatronManager::spawnNewPatron(Catalog& catalog) {
     p.velocity = Vector2D(0.0f, 0.0f);
     p.state = PatronState::ENTERING;
     p.served = false;
-    p.maxPatience = 75.0f + static_cast<float>(rand() % 40);
+    // Give beginner players more time to search, collect, and issue a book.
+    p.maxPatience = 150.0f + static_cast<float>(rand() % 61);
     p.patience = p.maxPatience;
 
     p.colorR = static_cast<uint8_t>(100 + rand() % 140);

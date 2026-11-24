@@ -153,14 +153,14 @@ enum class GameState {
 };
 
 enum class SearchType {
-    BINARY_ISBN,
+    LINEAR_ISBN,
     LINEAR_TITLE
 };
 
 struct SearchResult {
     bool found{ false };
     int operationsCount{ 0 };
-    SearchType searchType{ SearchType::BINARY_ISBN };
+    SearchType searchType{ SearchType::LINEAR_ISBN };
     Book matchedBook;
     int matchedIndices[32]{ 0 };
     int matchCount{ 0 };

@@ -17,7 +17,7 @@ private:
     sf::FloatRect modalBounds{ { 480.f, 220.f }, { 300.f, 260.f } };
     sf::FloatRect isbnBoxBounds{ { 530.f, 260.f }, { 230.f, 24.f } };
     sf::FloatRect titleBoxBounds{ { 530.f, 292.f }, { 230.f, 24.f } };
-    sf::FloatRect binaryBtnBounds{ { 510.f, 326.f }, { 115.f, 26.f } };
+    sf::FloatRect binaryBtnBounds{ { 530.f, 300.f }, { 230.f, 30.f } };
     sf::FloatRect linearBtnBounds{ { 635.f, 326.f }, { 115.f, 26.f } };
     sf::FloatRect closeBtnBounds{ { 750.f, 225.f }, { 22.f, 20.f } };
 
@@ -36,8 +36,7 @@ public:
     }
 
     void handleEvent(const sf::Event& event, Catalog& catalog);
-    void executeBinarySearch(Catalog& catalog);
-    void executeLinearSearch(Catalog& catalog);
+    void executeISBNSearch(Catalog& catalog);
 
     void render(sf::RenderWindow& window, const sf::Font& font);
 };

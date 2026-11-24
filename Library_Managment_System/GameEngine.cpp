@@ -1,7 +1,7 @@
 #include "GameEngine.hpp"
 #include <iostream>
 #include <iomanip>
- #include <sstream>
+#include <sstream>
 
 GameEngine::GameEngine()
     : window(sf::VideoMode({ 800, 600 }), "Bibliotheca Quest: The Ultimate Library Simulation & Management Game")
@@ -10,13 +10,14 @@ GameEngine::GameEngine()
 }
 
 GameEngine::~GameEngine() {
-
+    // Save on destruction
     BinaryFileManager::saveCatalog(catalog.getBooks());
 }
 
 bool GameEngine::initialize() {
-
-    if (!font.openFromFile("C:/Windows/Fonts/arial.ttf")) {
+    // Load system font
+    if (!font.openFromFile("/System/Library/Fonts/Supplemental/Arial.ttf") &&
+        !font.openFromFile("C:/Windows/Fonts/arial.ttf")) {
         if (!font.openFromFile("C:/Windows/Fonts/segoeui.ttf")) {
             std::cerr << "[WARNING]: Failed to load system font. UI text might not render.\n";
             fontLoaded = false;
@@ -27,6 +28,7 @@ bool GameEngine::initialize() {
         fontLoaded = true;
     }
 
+    // Try loading persistent catalog, or initialize default
     std::vector<Book> loadedBooks;
     if (BinaryFileManager::loadCatalog(loadedBooks) && !loadedBooks.empty()) {
         catalog.setBooks(loadedBooks);
@@ -35,6 +37,7 @@ bool GameEngine::initialize() {
         BinaryFileManager::saveCatalog(catalog.getBooks());
     }
 
+    // Initialize map & patrons
     map.initialize();
     patronMgr.initialize(catalog);
     BinaryFileManager::loadHighScores(highScores);
@@ -53,12 +56,13 @@ void GameEngine::run() {
 
     while (window.isOpen()) {
         float dt = clock.restart().asSeconds();
-        if (dt > 0.1f) dt = 0.1f;
+        if (dt > 0.1f) dt = 0.1f; // Clamp delta time
 
         if (notificationTimer > 0.0f) {
             notificationTimer -= dt;
         }
 
+        // Process Window Events
         while (const std::optional event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) {
                 BinaryFileManager::saveCatalog(catalog.getBooks());
@@ -66,6 +70,7 @@ void GameEngine::run() {
                 window.close();
             }
 
+            // Route events by state
             switch (currentState) {
                 case GameState::MainMenuState:
                     handleMainMenuInput(*event);
@@ -89,6 +94,7 @@ void GameEngine::run() {
             }
         }
 
+        // State Update Logic
         if (currentState == GameState::GameplayState || currentState == GameState::CatalogUIState) {
             player.update(dt, map);
 
@@ -106,6 +112,7 @@ void GameEngine::run() {
             }
         }
 
+        // Render Frame
         window.clear(sf::Color(215, 200, 175));
 
         switch (currentState) {
@@ -117,7 +124,7 @@ void GameEngine::run() {
                 renderGameplay();
                 break;
             case GameState::PauseState:
-                renderGameplay();
+                renderGameplay(); // Draw game under pause overlay
                 renderPauseMenu();
                 break;
             case GameState::GameOverState:
@@ -144,10 +151,10 @@ void GameEngine::handleMainMenuInput(const sf::Event& event) {
             selectedMenuIndex = (selectedMenuIndex + 1) % menuOptions.size();
         }
         else if (keyPressed->scancode == sf::Keyboard::Scan::Enter || keyPressed->scancode == sf::Keyboard::Scan::Space) {
-            if (selectedMenuIndex == 0) {
+            if (selectedMenuIndex == 0) { // Start Game
                 currentState = GameState::GameplayState;
             }
-            else if (selectedMenuIndex == 1) {
+            else if (selectedMenuIndex == 1) { // Load Game
                 Player pData = player.getData();
                 std::vector<Patron> pQueue;
                 if (BinaryFileManager::loadGameState(pData, pQueue)) {
@@ -159,14 +166,14 @@ void GameEngine::handleMainMenuInput(const sf::Event& event) {
                     showNotification("No savegame.bin file found!");
                 }
             }
-            else if (selectedMenuIndex == 2) {
+            else if (selectedMenuIndex == 2) { // Leaderboard
                 BinaryFileManager::loadHighScores(highScores);
                 currentState = GameState::LeaderboardState;
             }
-            else if (selectedMenuIndex == 3) {
+            else if (selectedMenuIndex == 3) { // How to play
                 currentState = GameState::HowToPlayState;
             }
-            else if (selectedMenuIndex == 4) {
+            else if (selectedMenuIndex == 4) { // Exit
                 window.close();
             }
         }
@@ -174,21 +181,21 @@ void GameEngine::handleMainMenuInput(const sf::Event& event) {
 }
 
 void GameEngine::handleGameplayInput(const sf::Event& event) {
-
+    // If Catalog Terminal overlay is active, route events there
     if (terminalUI.isVisible()) {
         terminalUI.handleEvent(event, catalog);
     }
 
     if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>()) {
-
+        // Toggle Terminal Overlay
         if (keyPressed->scancode == sf::Keyboard::Scan::Tab) {
             terminalUI.toggle();
             currentState = terminalUI.isVisible() ? GameState::CatalogUIState : GameState::GameplayState;
             if (terminalUI.isVisible()) {
-                terminalUI.executeBinarySearch(catalog);
+                terminalUI.executeISBNSearch(catalog);
             }
         }
-
+        // Pause Menu
         else if (keyPressed->scancode == sf::Keyboard::Scan::Escape) {
             if (terminalUI.isVisible()) {
                 terminalUI.close();
@@ -197,17 +204,19 @@ void GameEngine::handleGameplayInput(const sf::Event& event) {
                 currentState = GameState::PauseState;
             }
         }
-
+        // Interaction Key (E or Spacebar)
         else if (keyPressed->scancode == sf::Keyboard::Scan::E || keyPressed->scancode == sf::Keyboard::Scan::Space) {
             sf::Vector2f pPos = player.getPosition();
 
+            // 1. Check computer desk proximity
             if (map.isNearComputerTerminal(pPos)) {
                 terminalUI.open();
                 currentState = GameState::CatalogUIState;
-                terminalUI.executeBinarySearch(catalog);
+                terminalUI.executeISBNSearch(catalog);
                 return;
             }
 
+            // 2. Check checkout counter proximity (Serve patron or return book)
             if (map.isNearCheckoutCounter(pPos)) {
                 if (player.isCarrying()) {
                     std::string feedback;
@@ -234,6 +243,7 @@ void GameEngine::handleGameplayInput(const sf::Event& event) {
                 return;
             }
 
+            // 3. Check bookshelf proximity (Retrieve book)
             int shelfId = map.getInteractingShelf(pPos);
             if (shelfId > 0) {
                 const int searchedShelfId = terminalUI.getHighlightedShelfId();
@@ -272,19 +282,19 @@ void GameEngine::handlePauseInput(const sf::Event& event) {
             selectedPauseIndex = (selectedPauseIndex + 1) % pauseOptions.size();
         }
         else if (keyPressed->scancode == sf::Keyboard::Scan::Enter || keyPressed->scancode == sf::Keyboard::Scan::Space) {
-            if (selectedPauseIndex == 0) {
+            if (selectedPauseIndex == 0) { // Resume
                 currentState = GameState::GameplayState;
             }
-            else if (selectedPauseIndex == 1) {
+            else if (selectedPauseIndex == 1) { // Save Game
                 BinaryFileManager::saveCatalog(catalog.getBooks());
                 BinaryFileManager::saveGameState(player.getData(), patronMgr.getPatrons());
                 showNotification("Game state successfully flushed to catalog.dat & savegame.bin!");
             }
-            else if (selectedPauseIndex == 2) {
+            else if (selectedPauseIndex == 2) { // Terminal
                 terminalUI.open();
                 currentState = GameState::CatalogUIState;
             }
-            else if (selectedPauseIndex == 3) {
+            else if (selectedPauseIndex == 3) { // Main Menu
                 currentState = GameState::MainMenuState;
             }
         }
@@ -297,7 +307,7 @@ void GameEngine::handlePauseInput(const sf::Event& event) {
 void GameEngine::handleGameOverInput(const sf::Event& event) {
     if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>()) {
         if (keyPressed->scancode == sf::Keyboard::Scan::Enter || keyPressed->scancode == sf::Keyboard::Scan::Space) {
-
+            // Save high score
             HighScoreRecord rec;
             strncpy_s(rec.playerName, player.getData().name, sizeof(rec.playerName));
             rec.score = player.getData().score;
@@ -307,6 +317,7 @@ void GameEngine::handleGameOverInput(const sf::Event& event) {
             highScores.push_back(rec);
             BinaryFileManager::saveHighScores(highScores);
 
+            // Reset Game
             player = PlayerEntity();
             patronMgr.initialize(catalog);
             currentState = GameState::MainMenuState;
@@ -333,7 +344,7 @@ void GameEngine::handleHowToPlayInput(const sf::Event& event) {
 }
 
 void GameEngine::renderMainMenu() {
-
+    // Header
     sf::RectangleShape banner(sf::Vector2f(720.f, 90.f));
     banner.setPosition(sf::Vector2f(40.f, 60.f));
     banner.setFillColor(sf::Color(45, 60, 95));
@@ -352,6 +363,7 @@ void GameEngine::renderMainMenu() {
     subtitle.setPosition(sf::Vector2f(220.f, 115.f));
     window.draw(subtitle);
 
+    // Options
     for (size_t i = 0; i < menuOptions.size(); ++i) {
         sf::RectangleShape btn(sf::Vector2f(340.f, 42.f));
         btn.setPosition(sf::Vector2f(230.f, 200.f + i * 58.f));
@@ -374,6 +386,7 @@ void GameEngine::renderMainMenu() {
         window.draw(optText);
     }
 
+    // Footer credits
     sf::Text credits(font, "Developed by Muhammad Talha | Roll No: 26L-0755 | Group 15", 11);
     credits.setFillColor(sf::Color(70, 70, 70));
     credits.setPosition(sf::Vector2f(200.f, 560.f));
@@ -381,15 +394,19 @@ void GameEngine::renderMainMenu() {
 }
 
 void GameEngine::renderGameplay() {
+    // 1. Draw Map & Furniture
+    map.render(window, font, terminalUI.getHighlightedShelfId());
 
-    map.render(window, font, catalog, terminalUI.getHighlightedShelfId());
-
+    // 2. Draw AI Patrons
     patronMgr.render(window, font);
 
+    // 3. Draw Player Librarian
     player.render(window, font);
 
+    // 4. Draw HUD (Heads-Up Display)
     renderHUD();
 
+    // Keep the most important controls visible for new players.
     sf::RectangleShape controlsBox(sf::Vector2f(255.f, 45.f));
     controlsBox.setPosition(sf::Vector2f(530.f, 535.f));
     controlsBox.setFillColor(sf::Color(20, 25, 35, 220));
@@ -402,10 +419,12 @@ void GameEngine::renderGameplay() {
     controlsText.setPosition(sf::Vector2f(540.f, 543.f));
     window.draw(controlsText);
 
+    // 5. Draw Terminal UI if active
     if (terminalUI.isVisible()) {
         terminalUI.render(window, font);
     }
 
+    // 6. Interaction Proximity Prompt
     sf::Vector2f pPos = player.getPosition();
     std::string promptStr = "";
     if (map.isNearComputerTerminal(pPos)) {
@@ -434,6 +453,7 @@ void GameEngine::renderGameplay() {
         window.draw(pText);
     }
 
+    // 7. Notification banner
     if (notificationTimer > 0.0f) {
         sf::RectangleShape banner(sf::Vector2f(500.f, 32.f));
         banner.setPosition(sf::Vector2f(150.f, 15.f));
@@ -451,7 +471,7 @@ void GameEngine::renderGameplay() {
 }
 
 void GameEngine::renderHUD() {
-
+    // Exact styled HUD matching proposal screenshot!
     sf::RectangleShape hudPanel(sf::Vector2f(300.f, 125.f));
     hudPanel.setFillColor(sf::Color(20, 25, 35, 230));
     hudPanel.setOutlineColor(sf::Color(190, 190, 190));
@@ -522,11 +542,12 @@ void GameEngine::renderHowToPlay() {
 }
 
 void GameEngine::renderPauseMenu() {
-
+    // Semi-transparent backdrop overlay
     sf::RectangleShape dim(sf::Vector2f(800.f, 600.f));
     dim.setFillColor(sf::Color(0, 0, 0, 170));
     window.draw(dim);
 
+    // Pause Dialog Box
     sf::RectangleShape pauseBox(sf::Vector2f(340.f, 300.f));
     pauseBox.setPosition(sf::Vector2f(230.f, 150.f));
     pauseBox.setFillColor(sf::Color(35, 45, 60, 240));
@@ -608,6 +629,7 @@ void GameEngine::renderLeaderboard() {
     lbTitle.setPosition(sf::Vector2f(230.f, 105.f));
     window.draw(lbTitle);
 
+    // Table Header
     sf::Text head(font, "RANK   LIBRARIAN              SCORE    DAYS   SERVED    DATE", 11);
     head.setFillColor(sf::Color::Cyan);
     head.setStyle(sf::Text::Bold);
