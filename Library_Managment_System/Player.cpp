@@ -13,11 +13,12 @@ PlayerEntity::PlayerEntity() {
     data.timeOfDay = 10.75f;
     data.patronsServed = 14;
     data.patronsLost = 1;
-    data.booksCapacity = 5;
-    data.booksHeld = 3;
-    data.isCarryingBook = true;
-    data.carriedBookIsbn = 1004;
-    strncpy_s(data.carriedBookTitle, "Computer Systems", sizeof(data.carriedBookTitle));
+    // Keep the beginner inventory simple: carry one searched book at a time.
+    data.booksCapacity = 1;
+    data.booksHeld = 0;
+    data.isCarryingBook = false;
+    data.carriedBookIsbn = 0;
+    data.carriedBookTitle[0] = '\0';
 }
 
 sf::FloatRect PlayerEntity::getBounds() const {

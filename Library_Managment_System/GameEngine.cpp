@@ -236,15 +236,25 @@ void GameEngine::handleGameplayInput(const sf::Event& event) {
 
             int shelfId = map.getInteractingShelf(pPos);
             if (shelfId > 0) {
-                auto shelfBooks = catalog.getBooksByShelf(shelfId);
-                if (!shelfBooks.empty()) {
-                    const auto& b = shelfBooks[0];
-                    if (player.pickUpBook(b.isbn, b.title, shelfId)) {
-                        catalog.borrowBook(b.isbn);
-                        showNotification("COLLECTED: '" + std::string(b.title) + "' (ISBN " +
-                                         std::to_string(b.isbn) + ")", 4.0f);
-                    } else {
-                        showNotification("Inventory full! Librarian can only hold " + std::to_string(player.getData().booksCapacity) + " books.");
+                const int searchedShelfId = terminalUI.getHighlightedShelfId();
+                const int searchedIsbn = terminalUI.getHighlightedBookISBN();
+
+                if (searchedIsbn == 0) {
+                    showNotification("Search for the patron's book in the catalog first!", 4.0f);
+                } else if (shelfId != searchedShelfId) {
+                    showNotification("Wrong shelf! Go to highlighted Shelf #" +
+                                     std::to_string(searchedShelfId) + ".", 4.0f);
+                } else if (player.isCarrying()) {
+                    showNotification("You are already carrying '" +
+                                     std::string(player.getCarriedTitle()) + "'.", 4.0f);
+                } else {
+                    Book* searchedBook = catalog.findBookByISBN(searchedIsbn);
+                    if (!searchedBook || searchedBook->copies <= 0) {
+                        showNotification("That book is currently out of stock.", 4.0f);
+                    } else if (player.pickUpBook(searchedBook->isbn, searchedBook->title, shelfId)) {
+                        catalog.borrowBook(searchedBook->isbn);
+                        showNotification("COLLECTED: '" + std::string(searchedBook->title) +
+                                         "' (ISBN " + std::to_string(searchedBook->isbn) + ")", 4.0f);
                     }
                 }
                 return;

@@ -31,6 +31,9 @@ public:
     int getHighlightedShelfId() const {
         return (hasSearched && lastResult.found) ? lastResult.matchedBook.shelfId : 0;
     }
+    int getHighlightedBookISBN() const {
+        return (hasSearched && lastResult.found) ? lastResult.matchedBook.isbn : 0;
+    }
 
     void handleEvent(const sf::Event& event, Catalog& catalog);
     void executeBinarySearch(Catalog& catalog);
