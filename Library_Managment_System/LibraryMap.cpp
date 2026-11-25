@@ -276,6 +276,13 @@ void LibraryMap::render(sf::RenderWindow& window, const sf::Font& font, const Ca
     compLabel.setPosition(sf::Vector2f(computerDeskBounds.position.x - 5.f, computerDeskBounds.position.y - 14.f));
     window.draw(compLabel);
 
+   
+    
+    
+    
+    
+    
+    
     sf::RectangleShape counter(sf::Vector2f(counterBounds.size.x, counterBounds.size.y));
     counter.setPosition(counterBounds.position);
     counter.setFillColor(sf::Color(120, 60, 25));
@@ -294,6 +301,8 @@ void LibraryMap::render(sf::RenderWindow& window, const sf::Font& font, const Ca
     window.draw(reg);
 
     sf::Text counterSign(font, "CHECKOUT & LOAN DESK", 11);
+
+    
     counterSign.setFillColor(sf::Color(255, 230, 160));
     counterSign.setStyle(sf::Text::Bold);
     counterSign.setPosition(sf::Vector2f(counterBounds.position.x + 85.f, counterBounds.position.y + 18.f));
