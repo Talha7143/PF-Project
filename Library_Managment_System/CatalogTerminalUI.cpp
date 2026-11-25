@@ -177,7 +177,9 @@ void CatalogTerminalUI::render(sf::RenderWindow& window, const sf::Font& font) {
             sf::Text bTitle(font, "Title: " + t, 9);
             bTitle.setFillColor(sf::Color::White);
             bTitle.setPosition(sf::Vector2f(modalBounds.position.x + 18.f, 384.f));
-            window.draw(bTitle);
+            
+            
+                window.draw(bTitle);
 
             sf::Text bLoc(font, "Loc: " + std::string(lastResult.matchedBook.location) +
                                 " [Shelf #" + std::to_string(lastResult.matchedBook.shelfId) + "]", 9);
@@ -191,6 +193,15 @@ void CatalogTerminalUI::render(sf::RenderWindow& window, const sf::Font& font) {
             window.draw(bStock);
         } else {
             sf::Text notFound(font, "STATUS: NO MATCH FOUND\nExecuted in " + std::to_string(lastResult.operationsCount) + " operations.", 10);
+
+            
+            
+            
+            
+            
+            
+            
+            
             notFound.setFillColor(sf::Color(255, 100, 100));
             notFound.setPosition(sf::Vector2f(modalBounds.position.x + 18.f, 380.f));
             window.draw(notFound);
