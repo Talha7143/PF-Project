@@ -629,7 +629,15 @@ void GameEngine::renderLeaderboard() {
     lbTitle.setPosition(sf::Vector2f(230.f, 105.f));
     window.draw(lbTitle);
 
-    // Table Header
+    
+    
+    
+    
+    
+    
+    
+    
+    
     sf::Text head(font, "RANK   LIBRARIAN              SCORE    DAYS   SERVED    DATE", 11);
     head.setFillColor(sf::Color::Cyan);
     head.setStyle(sf::Text::Bold);
@@ -646,6 +654,12 @@ void GameEngine::renderLeaderboard() {
            << std::setw(6) << hs.patronsServed << "    "
            << hs.dateString;
 
+       
+        
+        
+        
+        
+        
         sf::Text row(font, ss.str(), 11);
         row.setFillColor(sf::Color::White);
         row.setPosition(sf::Vector2f(130.f, 180.f + i * 28.f));
